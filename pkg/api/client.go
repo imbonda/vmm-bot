@@ -1,10 +1,11 @@
-// pkg/api/client.go
 package api
 
 import (
 	"context"
+	"encoding/json"
 
 	bybit "github.com/bybit-exchange/bybit.go.api"
+
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
 )
 
@@ -22,43 +23,41 @@ func NewBybitClient(apiKey, apiSecret string) *BybitClient {
 	}
 }
 
-func (b *BybitClient) GetOrderBook(symbol string) (models.OrderBook, error) {
+func (b *BybitClient) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
 	res, err := b.client.
 		NewUtaBybitServiceWithParams(
 			map[string]interface{}{
 				"category": "spot",
 				"symbol":   symbol,
-				"interval": "1",
 			},
 		).
-		GetMarketKline(context.Background())
-	return models.OrderBook{
-		Category: (res.Result).(map[string]any)["category"].(string),
-		Symbol:   (res.Result).(map[string]any)["symbol"].(string),
-		List:     (res.Result).(map[string]any)["list"].(any),
-	}, err
+		GetOrderBookInfo(ctx)
+	if err != nil {
+		return nil, err
+	}
+	data, err := json.Marshal(res.Result)
+	if err != nil {
+		return nil, err
+	}
+	result := &models.OrderBook{}
+	err = json.Unmarshal(data, result)
+	return result, err
 }
 
-func (b *BybitClient) PlaceOrder(
-	symbol,
-	side,
-	orderType,
-	qty,
-	price string,
-) (any, error) {
-	res, err := b.client.
+func (b *BybitClient) PlaceOrder(ctx context.Context, order *models.Order) error {
+	_, err := b.client.
 		NewUtaBybitServiceWithParams(
 			map[string]interface{}{
 				"category":    "linear",
-				"symbol":      "BTCUSDT",
-				"side":        "Buy",
+				"symbol":      order.Symbol,
+				"side":        order.Action,
 				"positionIdx": 0,
 				"orderType":   "Limit",
-				"qty":         "0.001",
-				"price":       "10000",
+				"qty":         order.Qty,
+				"price":       order.Price,
 				"timeInForce": "GTC",
 			},
 		).
 		PlaceOrder(context.Background())
-	return res, err
+	return err
 }

@@ -4,7 +4,7 @@ package main
 import (
 	"log"
 
-	"github.com/imbonda/bybit-vmm-bot/pkg/trader"
+	"github.com/imbonda/bybit-vmm-bot/cmd/internal/trader"
 )
 
 func main() {
