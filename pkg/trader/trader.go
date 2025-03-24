@@ -33,7 +33,10 @@ func (t *Trader) Start() error {
 			return fmt.Errorf("error fetching order book: %w", err)
 		}
 
-		orderPrice := rand.Float64()*(orderBook.Asks[0].Price-orderBook.Bids[0].Price) + orderBook.Bids[0].Price
+		fmt.Println(orderBook)      // TODO: remove
+		fmt.Println(orderBook.List) // TODO: remove
+
+		orderPrice := 0.0 // TODO: rand.Float64()*(orderBook.Asks[0].Price-orderBook.Bids[0].Price) + orderBook.Bids[0].Price
 		side := "Buy"
 		if rand.Intn(2) == 0 {
 			side = "Sell"
