@@ -18,13 +18,11 @@ type Trader struct {
 }
 
 type NewTraderInput struct {
-	Symbol                       string
-	ExchangeClient               interfaces.ExchangeClient
-	MinExecutionDuration         time.Duration
-	MaxExecutionDuration         time.Duration
-	MinNumberOfIterationsInCycle uint
-	MaxNumberOfIterationsInCycle uint
-	Logger                       log.Logger
+	Symbol               string
+	ExchangeClient       interfaces.ExchangeClient
+	MinExecutionDuration time.Duration
+	MaxExecutionDuration time.Duration
+	Logger               log.Logger
 }
 
 type shouldTradeOutput struct {
@@ -54,12 +52,12 @@ func NewTrader(ctx context.Context, input *NewTraderInput) (*Trader, error) {
 	return trader, nil
 }
 
-func (t *Trader) Start() error {
+func (t *Trader) Start(ctx context.Context) error {
 	t.scheduler.Start()
 	return nil
 }
 
-func (t *Trader) Shutdown() error {
+func (t *Trader) Shutdown(ctx context.Context) error {
 	return t.scheduler.Shutdown()
 }
 
@@ -72,7 +70,8 @@ func (t *Trader) shouldTrade(ctx context.Context) (*shouldTradeOutput, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	_ = spread
+	return nil, nil
 }
 
 func (t *Trader) tradeOnce() error {

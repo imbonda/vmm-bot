@@ -6,6 +6,7 @@ require (
 	github.com/bybit-exchange/bybit.go.api v0.0.0-20250303085828-836a2657b0dc
 	github.com/go-co-op/gocron/v2 v2.16.1
 	github.com/go-kit/log v0.2.1
+	github.com/kelseyhightower/envconfig v1.4.0
 )
 
 require (

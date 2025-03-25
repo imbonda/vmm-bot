@@ -1,29 +1,37 @@
-package api
+package bybit
 
 import (
 	"context"
 	"encoding/json"
 
 	bybit "github.com/bybit-exchange/bybit.go.api"
+	"github.com/go-kit/log"
 
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
 )
 
-type BybitClient struct {
+type Client struct {
 	client *bybit.Client
+	logger log.Logger
 }
 
-func NewBybitClient(apiKey, apiSecret string) *BybitClient {
-	return &BybitClient{
+type NewClientInput struct {
+	APIKey    string
+	APISecret string
+	Logger    log.Logger
+}
+
+func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
+	return &Client{
 		client: bybit.NewBybitHttpClient(
-			apiKey,
-			apiSecret,
+			input.APISecret,
+			input.APISecret,
 			bybit.WithBaseURL(bybit.TESTNET),
 		),
-	}
+	}, nil
 }
 
-func (b *BybitClient) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
+func (b *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
 	res, err := b.client.
 		NewUtaBybitServiceWithParams(
 			map[string]interface{}{
@@ -44,7 +52,7 @@ func (b *BybitClient) GetOrderBook(ctx context.Context, symbol string) (*models.
 	return result, err
 }
 
-func (b *BybitClient) PlaceOrder(ctx context.Context, order *models.Order) error {
+func (b *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 	_, err := b.client.
 		NewUtaBybitServiceWithParams(
 			map[string]interface{}{
