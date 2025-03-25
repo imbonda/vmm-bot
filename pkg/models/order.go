@@ -8,9 +8,8 @@ const (
 )
 
 type Order struct {
-	Action OrderAction
 	Symbol string
-	Side   string
+	Action OrderAction
 	Price  float64
 	Qty    float64
 }
