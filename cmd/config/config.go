@@ -9,12 +9,12 @@ import (
 )
 
 type Configuration struct {
-	ServiceName          string        `default:"bybit-trader" envconfig:"SERVICE_NAME"`
-	Symbol               string        `default:"BTCUSD" envconfig:"SYMBOL"`
-	MinExecutionDuration time.Duration `default:"1s" envconfig:"MIN_EXECUTION_DURATION"`
-	MaxExecutionDuration time.Duration `default:"30s" envconfig:"MAX_EXECUTION_DURATION"`
-	BybitAPIKey          string        `required:"1" envconfig:"BYBIT_API_KEY"`
-	BybitAPISecret       string        `required:"1" envconfig:"BYBIT_API_SECRET"`
+	ServiceName                    string        `default:"bybit-trader" envconfig:"SERVICE_NAME"`
+	Symbol                         string        `default:"BTCUSD" envconfig:"SYMBOL"`
+	IntervalExecutionDuration      time.Duration `default:"60s" envconfig:"INTERVAL_EXECUTION_DURATION"`
+	NumOfTradeIterationsInInterval int           `default:"2" envconfig:"NUM_OF_TRADE_ITERATIONS_IN_INTERVAL"`
+	BybitAPIKey                    string        `required:"1" envconfig:"BYBIT_API_KEY"`
+	BybitAPISecret                 string        `required:"1" envconfig:"BYBIT_API_SECRET"`
 
 	GraceFullShutdown time.Duration `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`
 

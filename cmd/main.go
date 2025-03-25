@@ -12,7 +12,7 @@ import (
 	"github.com/go-kit/log/level"
 
 	"github.com/imbonda/bybit-vmm-bot/cmd/config"
-	"github.com/imbonda/bybit-vmm-bot/cmd/internal/trader"
+	"github.com/imbonda/bybit-vmm-bot/internal/trader"
 	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/bybit"
 )
 
@@ -42,11 +42,11 @@ func main() {
 		return
 	}
 	bybitTrader, err := trader.NewTrader(ctx, &trader.NewTraderInput{
-		Symbol:               cfg.Symbol,
-		ExchangeClient:       bybitClient,
-		MinExecutionDuration: cfg.MinExecutionDuration,
-		MaxExecutionDuration: cfg.MaxExecutionDuration,
-		Logger:               logger,
+		Symbol:                         cfg.Symbol,
+		ExchangeClient:                 bybitClient,
+		IntervalExecutionDuration:      cfg.IntervalExecutionDuration,
+		NumOfTradeIterationsInInterval: cfg.NumOfTradeIterationsInInterval,
+		Logger:                         logger,
 	})
 	if err != nil {
 		level.Error(logger).Log("msg", "failed to initiate a trader", "err", err)
@@ -81,5 +81,5 @@ func main() {
 		return
 	}
 
-	level.Info(logger).Log("msg", "cve matcher server exiting")
+	level.Info(logger).Log("msg", "exiting")
 }
