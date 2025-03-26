@@ -5,6 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "[GO] Run Program",
+            "type": "go",
+            "mode": "auto",
+            "request": "launch",
+            "program": "${workspaceFolder}/cmd/main.go",
+            "envFile": "${workspaceFolder}/.env"
+        },
+
+        {
             "name": "[GO] Run Current File",
             "type": "go",
             "mode": "auto",

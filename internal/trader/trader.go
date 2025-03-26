@@ -2,189 +2,102 @@ package trader
 
 import (
 	"context"
-	"math/rand"
 	"runtime/debug"
-	"sync/atomic"
 	"time"
 
-	"github.com/go-co-op/gocron/v2"
 	"github.com/go-kit/log"
-	"github.com/go-kit/log/level"
 
 	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
+	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
 type Trader struct {
-	exchangeClient                 interfaces.ExchangeClient
-	scheduler                      gocron.Scheduler
-	symbol                         string
-	numOfTradeIterationsInInterval int
-	intervalExecutionDuration      time.Duration
-	logger                         log.Logger
-	averageDuration                atomic.Int64
-	runsCounter                    atomic.Uint64
-	lastRunEpoch                   atomic.Uint64
+	exchangeClient interfaces.ExchangeClient
+	executor       *utils.IterationsExecutor[*Trader]
+	symbol         string
+	logger         log.Logger
 }
 
 type NewTraderInput struct {
-	Symbol                         string
 	ExchangeClient                 interfaces.ExchangeClient
+	Symbol                         string
 	IntervalExecutionDuration      time.Duration
 	NumOfTradeIterationsInInterval int
 	Logger                         log.Logger
 }
 
-type spreadRange struct {
-	ask    float64
-	bid    float64
-	spread float64
-}
-
-type shouldTradeOutput struct {
+type tradeParams struct {
 	shouldTrade bool
-	spread      float64
+	price       float64
+	qty         float64
 }
 
 func NewTrader(ctx context.Context, input *NewTraderInput) (*Trader, error) {
-	scheduler, err := gocron.NewScheduler()
-	if err != nil {
-		return nil, err
-	}
 	trader := &Trader{
-		exchangeClient:                 input.ExchangeClient,
-		scheduler:                      scheduler,
-		symbol:                         input.Symbol,
-		numOfTradeIterationsInInterval: input.NumOfTradeIterationsInInterval,
-		intervalExecutionDuration:      input.IntervalExecutionDuration,
-		logger:                         input.Logger,
-		averageDuration:                atomic.Int64{},
-		runsCounter:                    atomic.Uint64{},
-		lastRunEpoch:                   atomic.Uint64{},
+		exchangeClient: input.ExchangeClient,
+		symbol:         input.Symbol,
+		logger:         input.Logger,
 	}
-	_, err = scheduler.NewJob(gocron.DurationJob(input.IntervalExecutionDuration),
-		gocron.NewTask(trader.doInterval), gocron.WithSingletonMode(gocron.LimitModeReschedule),
-	)
+	executor, err := utils.NewIterationsExecutor(
+		ctx,
+		&utils.NewIterationsExecutorInput[*Trader]{
+			Callee:                         trader,
+			IntervalExecutionDuration:      input.IntervalExecutionDuration,
+			NumOfTradeIterationsInInterval: input.NumOfTradeIterationsInInterval,
+			Logger:                         input.Logger,
+		})
 	if err != nil {
 		return nil, err
 	}
+	trader.executor = executor
 	return trader, nil
 }
 
 func (t *Trader) Start(ctx context.Context) error {
-	t.scheduler.Start()
-	return nil
+	return t.executor.Start(ctx)
 }
 
 func (t *Trader) Shutdown(ctx context.Context) error {
-	return t.scheduler.Shutdown()
+	return t.executor.Shutdown(ctx)
 }
 
-func (t *Trader) doInterval(ctx context.Context) {
+func (t *Trader) DoIteration(ctx context.Context) error {
 	defer func() {
 		if r := recover(); r != nil {
-			t.logger.Log("msg", "panic recovered", "err", r)
+			t.logger.Log("msg", "panic recovered in iteration", "err", r)
 			debug.PrintStack()
 		}
-		t.lastRunEpoch.Store(uint64(time.Now().Unix()))
 	}()
-	t.runsCounter.Add(1)
-	runCounter := t.runsCounter.Load()
-	level.Debug(t.logger).Log("msg", "starting trade interval", "interval", runCounter)
-	num := t.numOfTradeIterationsInInterval
-	if num <= 0 {
-		return
-	}
-	totalDuration := t.intervalExecutionDuration
-	startTime := time.Now()
-
-	for i := 0; i < num; i++ {
-		// Estimate slack before each run
-		lastAvg := t.averageDuration.Load()
-		if lastAvg > 0 {
-			avgDur := time.Duration(lastAvg)
-			elapsed := time.Since(startTime)
-			remaining := totalDuration - elapsed
-			remainingIterations := num - i
-
-			// Max slack = time left minus estimated time needed for rest of iterations
-			maxSlack := remaining - (avgDur * time.Duration(remainingIterations))
-			if maxSlack > 0 {
-				sleepTime := time.Duration(rand.Int63n(int64(maxSlack)))
-				level.Debug(t.logger).Log("msg", "got random sleep time", "interval", runCounter, "iteration", i+1, "sleepTime", sleepTime.Seconds())
-				time.Sleep(sleepTime)
-			}
-		}
-
-		iterStart := time.Now()
-		level.Debug(t.logger).Log("msg", "starting trade iteration", "interval", runCounter, "iteration", i+1)
-		if err := t.tradeOnce(ctx); err != nil {
-			t.logger.Log("msg", "trade failed", "err", err, "interval", runCounter, "iteration", i+1)
-		} else {
-			level.Debug(t.logger).Log("msg", "trade iteration is done", "interval", runCounter, "iteration", i+1)
-		}
-		iterDur := time.Since(iterStart)
-
-		// Update moving average
-		prevAvg := time.Duration(t.averageDuration.Load())
-		if prevAvg == 0 {
-			t.averageDuration.Store(iterDur.Nanoseconds())
-		} else {
-			newAvg := (prevAvg*9 + iterDur) / 10
-			t.averageDuration.Store(int64(newAvg))
-		}
-	}
-}
-
-func (t *Trader) shouldTrade(ctx context.Context) (*shouldTradeOutput, error) {
-	orderBook, err := t.exchangeClient.GetOrderBook(ctx, t.symbol)
-	if err != nil {
-		return nil, err
-	}
-	spread, err := orderBook.Spread()
-	if err != nil {
-		return nil, err
-	}
-	_ = spread
-	return nil, nil
+	return t.tradeOnce(ctx)
 }
 
 func (t *Trader) tradeOnce(ctx context.Context) error {
-	spreadRange, err := t.getSpreadRange(ctx)
+	params, err := t.getTradeParams(ctx)
 	if err != nil {
 		return err
 	}
-	price, err := t.getRandPriceInSpread(ctx, spreadRange)
-	if err != nil {
-		return err
-	}
-	qty, err := t.getRandQty(ctx)
+	err = t.exchangeClient.PlaceOrder(ctx, &models.Order{
+		Symbol: t.symbol,
+		Action: models.Sell,
+		Price:  params.price,
+		Qty:    params.qty,
+	})
 	if err != nil {
 		return err
 	}
 	err = t.exchangeClient.PlaceOrder(ctx, &models.Order{
 		Symbol: t.symbol,
 		Action: models.Buy,
-		Price:  price,
-		Qty:    qty,
+		Price:  params.price,
+		Qty:    params.qty,
 	})
-	if err != nil {
-		return err
-	}
-	return nil
-
+	// TODO: what happens if always fails to buy? .. will sell everything
+	return err
 }
 
-func (t *Trader) getSpreadRange(ctx context.Context) (*spreadRange, error) {
+func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	orderBook, err := t.exchangeClient.GetOrderBook(ctx, t.symbol)
-	if err != nil {
-		return nil, err
-	}
-	ask, err := orderBook.Ask()
-	if err != nil {
-		return nil, err
-	}
-	bid, err := orderBook.Bid()
 	if err != nil {
 		return nil, err
 	}
@@ -192,18 +105,20 @@ func (t *Trader) getSpreadRange(ctx context.Context) (*spreadRange, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &spreadRange{
-		ask:    ask,
-		bid:    bid,
-		spread: spread,
+	price := t.getRandPriceInSpread(ctx, spread)
+	qty := t.getRandQty(ctx)
+	return &tradeParams{
+		shouldTrade: true,
+		price:       price,
+		qty:         qty,
 	}, nil
 }
 
-func (t *Trader) getRandPriceInSpread(ctx context.Context, spreadRange *spreadRange) (float64, error) {
-	price := spreadRange.bid + (spreadRange.ask-spreadRange.bid)/2
-	return price, nil
+func (t *Trader) getRandPriceInSpread(ctx context.Context, spread *models.Spread) float64 {
+	price := spread.Bid + (spread.Ask-spread.Bid)/2 /// 100 ...125.. 150
+	return price
 }
 
-func (t *Trader) getRandQty(ctx context.Context) (float64, error) {
-	return 0, nil
+func (t *Trader) getRandQty(ctx context.Context) float64 {
+	return 0
 }

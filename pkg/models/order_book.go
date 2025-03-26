@@ -17,6 +17,12 @@ type OrderBook struct {
 	bestBid   *float64
 }
 
+type Spread struct {
+	Ask  float64
+	Bid  float64
+	Diff float64
+}
+
 func (b *OrderBook) Ask() (float64, error) {
 	if b.bestAsk != nil {
 		return *b.bestAsk, nil
@@ -53,14 +59,18 @@ func (b *OrderBook) Bid() (float64, error) {
 	return bidPrice, nil
 }
 
-func (b *OrderBook) Spread() (float64, error) {
+func (b *OrderBook) Spread() (*Spread, error) {
 	askPrice, err := b.Ask()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	bidPrice, err := b.Bid()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return askPrice - bidPrice, nil
+	return &Spread{
+		Ask:  askPrice,
+		Bid:  bidPrice,
+		Diff: askPrice - bidPrice,
+	}, nil
 }
