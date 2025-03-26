@@ -50,8 +50,10 @@ func NewIterationsExecutor[I iterable](ctx context.Context, input *NewIterations
 		runsCounter:                    atomic.Uint64{},
 		lastRunEpoch:                   atomic.Uint64{},
 	}
-	_, err = scheduler.NewJob(gocron.DurationJob(input.IntervalExecutionDuration),
-		gocron.NewTask(executor.doInterval), gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	_, err = scheduler.NewJob(
+		gocron.DurationJob(input.IntervalExecutionDuration),
+		gocron.NewTask(executor.doInterval),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	)
 	if err != nil {
 		return nil, err
@@ -60,6 +62,7 @@ func NewIterationsExecutor[I iterable](ctx context.Context, input *NewIterations
 }
 
 func (ie *IterationsExecutor[I]) Start(ctx context.Context) error {
+	ie.doInterval(ctx)
 	ie.scheduler.Start()
 	return nil
 }

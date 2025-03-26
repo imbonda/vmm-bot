@@ -3,6 +3,7 @@ package bybit
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	bybit "github.com/bybit-exchange/bybit.go.api"
 	"github.com/go-kit/log"
@@ -20,6 +21,12 @@ type NewClientInput struct {
 	APISecret string
 	Logger    log.Logger
 }
+
+type returnCode int
+
+const (
+	successCode returnCode = 0
+)
 
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 	return &Client{
@@ -41,6 +48,9 @@ func (b *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Order
 		).
 		GetOrderBookInfo(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if err = validateResponse(ctx, res); err != nil {
 		return nil, err
 	}
 	data, err := json.Marshal(res.Result)
@@ -68,4 +78,12 @@ func (b *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 		).
 		PlaceOrder(context.Background())
 	return err
+}
+
+func validateResponse(ctx context.Context, res *bybit.ServerResponse) error {
+	if returnCode(res.RetCode) != successCode {
+		err := fmt.Errorf("request failed: %v", res.RetMsg)
+		return err
+	}
+	return nil
 }

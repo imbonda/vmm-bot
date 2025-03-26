@@ -21,9 +21,9 @@ type Trader struct {
 
 type NewTraderInput struct {
 	ExchangeClient                 interfaces.ExchangeClient
-	Symbol                         string
 	IntervalExecutionDuration      time.Duration
 	NumOfTradeIterationsInInterval int
+	Symbol                         string
 	Logger                         log.Logger
 }
 

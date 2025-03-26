@@ -42,10 +42,10 @@ func main() {
 		return
 	}
 	bybitTrader, err := trader.NewTrader(ctx, &trader.NewTraderInput{
-		Symbol:                         cfg.Symbol,
 		ExchangeClient:                 bybitClient,
 		IntervalExecutionDuration:      cfg.IntervalExecutionDuration,
 		NumOfTradeIterationsInInterval: cfg.NumOfTradeIterationsInInterval,
+		Symbol:                         cfg.Symbol,
 		Logger:                         logger,
 	})
 	if err != nil {
