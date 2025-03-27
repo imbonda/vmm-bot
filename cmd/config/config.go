@@ -6,15 +6,19 @@ import (
 
 	"github.com/go-kit/log"
 	"github.com/kelseyhightower/envconfig"
+
+	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
 type Configuration struct {
-	ServiceName                    string        `default:"bybit-trader" envconfig:"SERVICE_NAME"`
-	IntervalExecutionDuration      time.Duration `default:"60s" envconfig:"INTERVAL_EXECUTION_DURATION"`
-	NumOfTradeIterationsInInterval int           `default:"2" envconfig:"NUM_OF_TRADE_ITERATIONS_IN_INTERVAL"`
-	BybitAPIKey                    string        `required:"1" envconfig:"BYBIT_API_KEY"`
-	BybitAPISecret                 string        `required:"1" envconfig:"BYBIT_API_SECRET"`
-	Symbol                         string        `required:"1" envconfig:"SYMBOL"`
+	ServiceName                    string              `default:"bybit-trader" envconfig:"SERVICE_NAME"`
+	ServiceOrchestration           utils.Orchestration `default:"executor" envconfig:"SERVICE_ORCHESTRATION"`
+	IntervalExecutionDuration      time.Duration       `default:"60s" envconfig:"INTERVAL_EXECUTION_DURATION"`
+	NumOfTradeIterationsInInterval int                 `default:"2" envconfig:"NUM_OF_TRADE_ITERATIONS_IN_INTERVAL"`
+	ListenAddress                  string              `default:":8080" envconfig:"LISTEN_ADDRESS"`
+	BybitAPIKey                    string              `required:"1" envconfig:"BYBIT_API_KEY"`
+	BybitAPISecret                 string              `required:"1" envconfig:"BYBIT_API_SECRET"`
+	Symbol                         string              `required:"1" envconfig:"SYMBOL"`
 
 	GraceFullShutdown time.Duration `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`
 

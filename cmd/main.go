@@ -1,4 +1,3 @@
-// cmd/main.go
 package main
 
 import (
@@ -12,8 +11,7 @@ import (
 	"github.com/go-kit/log/level"
 
 	"github.com/imbonda/bybit-vmm-bot/cmd/config"
-	"github.com/imbonda/bybit-vmm-bot/internal/trader"
-	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/bybit"
+	"github.com/imbonda/bybit-vmm-bot/cmd/service"
 )
 
 var (
@@ -32,32 +30,16 @@ func init() {
 
 func main() {
 	ctx := context.Background()
-	bybitClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
-		APIKey:    cfg.BybitAPIKey,
-		APISecret: cfg.BybitAPISecret,
-		Logger:    nil,
-	})
-	if err != nil {
-		level.Error(logger).Log("msg", "failed to create bybit client", "err", err)
-		return
-	}
-	bybitTrader, err := trader.NewTrader(ctx, &trader.NewTraderInput{
-		ExchangeClient:                 bybitClient,
-		IntervalExecutionDuration:      cfg.IntervalExecutionDuration,
-		NumOfTradeIterationsInInterval: cfg.NumOfTradeIterationsInInterval,
-		Symbol:                         cfg.Symbol,
-		Logger:                         logger,
-	})
+	traderService, err := service.GetTraderService(ctx, cfg)
 	if err != nil {
 		level.Error(logger).Log("msg", "failed to initiate a trader", "err", err)
 		return
 	}
-	if err = bybitTrader.Start(ctx); err != nil {
+	level.Info(logger).Log("msg", "trader service starting")
+	if err = traderService.Start(ctx); err != nil {
 		level.Error(logger).Log("msg", "failed to start the trader", "err", err)
 		return
 	}
-
-	level.Info(logger).Log("msg", "auto trading started")
 
 	quit := make(chan os.Signal, 1)
 	// kill (no param) default send syscall.SIGTERM
@@ -76,7 +58,7 @@ func main() {
 	// gracefully shutdown the server, waiting max 5 seconds for current operations to complete
 	ctx1, cancel1 := context.WithTimeout(context.Background(), cfg.GraceFullShutdown)
 	defer cancel1()
-	if err = bybitTrader.Shutdown(ctx1); err != nil {
+	if err = traderService.Shutdown(ctx1); err != nil {
 		level.Error(logger).Log("msg", "server shutdown:", "err", err)
 		return
 	}

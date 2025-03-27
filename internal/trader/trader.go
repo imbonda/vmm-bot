@@ -3,28 +3,23 @@ package trader
 import (
 	"context"
 	"runtime/debug"
-	"time"
 
 	"github.com/go-kit/log"
 
 	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
 type Trader struct {
 	exchangeClient interfaces.ExchangeClient
-	executor       *utils.IterationsExecutor[*Trader]
 	symbol         string
 	logger         log.Logger
 }
 
 type NewTraderInput struct {
-	ExchangeClient                 interfaces.ExchangeClient
-	IntervalExecutionDuration      time.Duration
-	NumOfTradeIterationsInInterval int
-	Symbol                         string
-	Logger                         log.Logger
+	ExchangeClient interfaces.ExchangeClient
+	Symbol         string
+	Logger         log.Logger
 }
 
 type tradeParams struct {
@@ -34,32 +29,11 @@ type tradeParams struct {
 }
 
 func NewTrader(ctx context.Context, input *NewTraderInput) (*Trader, error) {
-	trader := &Trader{
+	return &Trader{
 		exchangeClient: input.ExchangeClient,
 		symbol:         input.Symbol,
 		logger:         input.Logger,
-	}
-	executor, err := utils.NewIterationsExecutor(
-		ctx,
-		&utils.NewIterationsExecutorInput[*Trader]{
-			Callee:                         trader,
-			IntervalExecutionDuration:      input.IntervalExecutionDuration,
-			NumOfTradeIterationsInInterval: input.NumOfTradeIterationsInInterval,
-			Logger:                         input.Logger,
-		})
-	if err != nil {
-		return nil, err
-	}
-	trader.executor = executor
-	return trader, nil
-}
-
-func (t *Trader) Start(ctx context.Context) error {
-	return t.executor.Start(ctx)
-}
-
-func (t *Trader) Shutdown(ctx context.Context) error {
-	return t.executor.Shutdown(ctx)
+	}, nil
 }
 
 func (t *Trader) DoIteration(ctx context.Context) error {
@@ -69,13 +43,14 @@ func (t *Trader) DoIteration(ctx context.Context) error {
 			debug.PrintStack()
 		}
 	}()
-	return t.tradeOnce(ctx)
+	_, err := t.TradeOnce(ctx)
+	return err
 }
 
-func (t *Trader) tradeOnce(ctx context.Context) error {
+func (t *Trader) TradeOnce(ctx context.Context) (*models.TradeOnceOutput, error) {
 	params, err := t.getTradeParams(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = t.exchangeClient.PlaceOrder(ctx, &models.Order{
 		Symbol: t.symbol,
@@ -84,7 +59,7 @@ func (t *Trader) tradeOnce(ctx context.Context) error {
 		Qty:    params.qty,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	err = t.exchangeClient.PlaceOrder(ctx, &models.Order{
 		Symbol: t.symbol,
@@ -93,7 +68,7 @@ func (t *Trader) tradeOnce(ctx context.Context) error {
 		Qty:    params.qty,
 	})
 	// TODO: what happens if always fails to buy? .. will sell everything
-	return err
+	return &models.TradeOnceOutput{}, err
 }
 
 func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
