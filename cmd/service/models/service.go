@@ -10,8 +10,8 @@ import (
 
 type NewTraderServiceInput struct {
 	ExchangeClient interfaces.ExchangeClient
-	Symbol         string
 
+	Symbol                         string
 	IntervalExecutionDuration      time.Duration
 	NumOfTradeIterationsInInterval int
 	ListenAddress                  string

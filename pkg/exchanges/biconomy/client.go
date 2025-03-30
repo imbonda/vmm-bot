@@ -10,7 +10,13 @@ import (
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
 )
 
+type credentials struct {
+	apiKey    string
+	apiSecret string
+}
+
 type Client struct {
+	credentials
 	client *resty.Client
 	logger log.Logger
 }
@@ -40,10 +46,23 @@ const (
 )
 
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
+	credentials := credentials{
+		apiKey:    input.APIKey,
+		apiSecret: input.APISecret,
+	}
 	client := resty.New().
 		SetBaseURL(BaseAPIURL).
 		SetHeader("Content-Type", "application/json")
-	return &Client{client: client, logger: input.Logger}, nil
+	// Add credentials to every request.
+	client.OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
+		request.SetQueryParam("api_key", credentials.apiKey)
+		request.SetQueryParam("secret_key", credentials.apiSecret)
+		return nil
+	})
+	return &Client{
+		credentials: credentials,
+		client:      client,
+		logger:      input.Logger}, nil
 }
 
 func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {

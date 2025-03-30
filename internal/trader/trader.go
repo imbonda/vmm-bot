@@ -2,7 +2,9 @@ package trader
 
 import (
 	"context"
+	"math/rand"
 	"runtime/debug"
+	"time"
 
 	"github.com/go-kit/log"
 
@@ -67,7 +69,6 @@ func (t *Trader) TradeOnce(ctx context.Context) (*models.TradeOnceOutput, error)
 		Price:  params.price,
 		Qty:    params.qty,
 	})
-	// TODO: what happens if always fails to buy? .. will sell everything
 	return &models.TradeOnceOutput{}, err
 }
 
@@ -90,8 +91,16 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 }
 
 func (t *Trader) getRandPriceInSpread(ctx context.Context, spread *models.Spread) float64 {
-	price := spread.Bid + (spread.Ask-spread.Bid)/2 /// 100 ...125.. 150
-	return price
+	// Define the 10%-90% subrange
+	adjustedMin := spread.Bid + 0.2*spread.Diff
+	adjustedMax := spread.Bid + 0.8*spread.Diff
+
+	// Seed random generator.
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	// Generate random price in the limited range
+	randomPrice := adjustedMin + r.Float64()*(adjustedMax-adjustedMin)
+	return randomPrice
 }
 
 func (t *Trader) getRandQty(ctx context.Context) float64 {
