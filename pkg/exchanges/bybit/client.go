@@ -38,8 +38,8 @@ func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 	}, nil
 }
 
-func (b *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
-	res, err := b.client.
+func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
+	res, err := api.client.
 		NewUtaBybitServiceWithParams(
 			map[string]interface{}{
 				"category": "spot",
@@ -62,8 +62,8 @@ func (b *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Order
 	return result, err
 }
 
-func (b *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
-	_, err := b.client.
+func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
+	_, err := api.client.
 		NewUtaBybitServiceWithParams(
 			map[string]interface{}{
 				"category":    "linear",

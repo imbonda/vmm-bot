@@ -11,15 +11,15 @@ import (
 	"github.com/imbonda/bybit-vmm-bot/cmd/service/executor"
 	"github.com/imbonda/bybit-vmm-bot/cmd/service/http"
 	"github.com/imbonda/bybit-vmm-bot/cmd/service/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/bybit"
+	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy"
 	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
 func GetTraderService(ctx context.Context, cfg *config.Configuration) (interfaces.TraderService, error) {
 	logger := cfg.GetLogger()
-	bybitClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
-		APIKey:    cfg.BybitAPIKey,
-		APISecret: cfg.BybitAPISecret,
+	bybitClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
+		APIKey:    cfg.ExchangeAPIKey,
+		APISecret: cfg.ExchangeAPISecret,
 		Logger:    nil,
 	})
 	if err != nil {

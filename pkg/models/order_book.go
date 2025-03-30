@@ -6,15 +6,11 @@ import (
 )
 
 type OrderBook struct {
-	Symbol    string     `json:"s"`
-	Asks      [][]string `json:"a"`
-	Bids      [][]string `json:"b"`
-	Timestamp int64      `json:"ts"`
-	UpdateID  int64      `json:"u"`
-	Sequence  int64      `json:"seq"`
-	CTime     int64      `json:"cts"`
-	bestAsk   *float64
-	bestBid   *float64
+	Symbol  string     `json:"s"`
+	Asks    [][]string `json:"a"`
+	Bids    [][]string `json:"b"`
+	bestAsk *float64
+	bestBid *float64
 }
 
 type Spread struct {
