@@ -7,16 +7,42 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-resty/resty/v2"
 
+	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy/hooks"
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
+	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
-type credentials struct {
-	apiKey    string
-	apiSecret string
+// API Configuration
+const (
+	BaseAPIURL = "https://www.biconomy.com"
+	APIV1      = "api/v1"
+	APIV2      = "api/v2"
+)
+
+type returnCode int
+
+const (
+	successCode returnCode = 0
+)
+
+type tradingSide string
+
+const (
+	ASK = "1"
+	BID = "2"
+)
+
+func resolveSide(action models.OrderAction) tradingSide {
+	if action == models.Buy {
+		return BID
+	}
+	return ASK
 }
 
 type Client struct {
-	credentials
+	v1     *utils.Endpoint
+	v2     *utils.Endpoint
+	creds  *utils.Credentials
 	client *resty.Client
 	logger log.Logger
 }
@@ -27,42 +53,25 @@ type NewClientInput struct {
 	Logger    log.Logger
 }
 
-// API Configuration
-const (
-	BaseAPIURL = "https://www.biconomy.com/api/v1/"
-)
-
-type returnCode int
-
-const (
-	successCode returnCode = 0
-)
-
-type tradingSide int
-
-const (
-	ASK = 1
-	BID = 2
-)
-
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
-	credentials := credentials{
-		apiKey:    input.APIKey,
-		apiSecret: input.APISecret,
+	v1 := utils.NewEndpoint(APIV1)
+	v2 := utils.NewEndpoint(APIV2)
+	creds := &utils.Credentials{
+		APIKey:    input.APIKey,
+		APISecret: input.APISecret,
 	}
 	client := resty.New().
 		SetBaseURL(BaseAPIURL).
-		SetHeader("Content-Type", "application/json")
+		SetHeader("Content-Type", "application/x-www-form-urlencoded").
+		SetHeader("X-SITE-ID", "127")
 	// Add credentials to every request.
-	client.OnBeforeRequest(func(client *resty.Client, request *resty.Request) error {
-		request.SetQueryParam("api_key", credentials.apiKey)
-		request.SetQueryParam("secret_key", credentials.apiSecret)
-		return nil
-	})
+	client.OnBeforeRequest(hooks.GetSigAuthBeforeRequestHook(client, creds))
 	return &Client{
-		credentials: credentials,
-		client:      client,
-		logger:      input.Logger}, nil
+		v1:     v1,
+		v2:     v2,
+		creds:  creds,
+		client: client,
+		logger: input.Logger}, nil
 }
 
 func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
@@ -72,7 +81,8 @@ func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Ord
 	}
 	resp, err := api.client.R().
 		SetResult(&result).
-		Get(fmt.Sprintf("depth?symbol=%s", symbol))
+		SetQueryParam("symbol", symbol).
+		Get(api.v1.Join("depth"))
 	if err != nil {
 		return nil, err
 	}
@@ -101,17 +111,17 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 		} `json:"result"`
 	}
 
-	payload := map[string]interface{}{
+	payload := map[string]string{
 		"market": order.Symbol,
-		"side":   resolveSide(order.Action),
-		"amount": order.Qty,
-		"price":  order.Price,
+		"side":   string(resolveSide(order.Action)),
+		"amount": utils.FormatFloatToString(order.Qty),
+		"price":  utils.FormatFloatToString(order.Price),
 	}
 
 	resp, err := api.client.R().
-		SetBody(payload).
+		SetFormData(payload).
 		SetResult(&result).
-		Post("private/trade/limit")
+		Post(api.v2.Join("private/trade/limit"))
 
 	if err != nil {
 		return err
@@ -122,11 +132,4 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 	}
 
 	return nil
-}
-
-func resolveSide(action models.OrderAction) tradingSide {
-	if action == models.Buy {
-		return BID
-	}
-	return ASK
 }
