@@ -28,9 +28,13 @@ type TraderBackend struct {
 
 func NewTraderService(ctx context.Context, input *models.NewTraderServiceInput) (interfaces.TraderService, error) {
 	traderClient, err := trader.NewTrader(ctx, &trader.NewTraderInput{
-		ExchangeClient: input.ExchangeClient,
-		Symbol:         input.Symbol,
-		Logger:         input.Logger,
+		ExchangeClient:  input.ExchangeClient,
+		Symbol:          input.Trade.Symbol,
+		SpreadMarginMin: input.Trade.SpreadMarginMin,
+		SpreadMarginMax: input.Trade.SpreadMarginMax,
+		TradeAmountMin:  input.Trade.TradeAmountMin,
+		TradeAmountMax:  input.Trade.TradeAmountMax,
+		Logger:          input.Logger,
 	})
 	if err != nil {
 		return nil, err
@@ -41,9 +45,9 @@ func NewTraderService(ctx context.Context, input *models.NewTraderServiceInput) 
 	}))
 
 	backend := &TraderBackend{
-		addr: input.ListenAddress,
+		addr: input.Executor.ListenAddress,
 		server: &http.Server{
-			Addr:    input.ListenAddress,
+			Addr:    input.Executor.ListenAddress,
 			Handler: router,
 		},
 		trader: traderClient,

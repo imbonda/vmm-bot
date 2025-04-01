@@ -8,13 +8,23 @@ import (
 	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
 )
 
-type NewTraderServiceInput struct {
-	ExchangeClient interfaces.ExchangeClient
+type TradeConfig struct {
+	Symbol          string
+	SpreadMarginMin float64
+	SpreadMarginMax float64
+	TradeAmountMin  float64
+	TradeAmountMax  float64
+}
 
-	Symbol                         string
+type ExecutorConfig struct {
 	IntervalExecutionDuration      time.Duration
 	NumOfTradeIterationsInInterval int
 	ListenAddress                  string
+}
 
-	Logger log.Logger
+type NewTraderServiceInput struct {
+	ExchangeClient interfaces.ExchangeClient
+	Trade          TradeConfig
+	Executor       ExecutorConfig
+	Logger         log.Logger
 }

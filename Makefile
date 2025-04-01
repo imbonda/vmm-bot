@@ -42,7 +42,7 @@ generate_mocks:
 
 .PHONY: docker
 docker:
-	docker build -t bybit-trader -f ./Dockerfile  .
+	docker build -t vmm-trader -f ./Dockerfile  .
 
 .PHONY: test
 test:

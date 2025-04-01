@@ -18,15 +18,30 @@ import (
 )
 
 type Configuration struct {
-	ServiceName                    string              `default:"trader" envconfig:"SERVICE_NAME"`
-	ServiceOrchestration           utils.Orchestration `default:"executor" envconfig:"SERVICE_ORCHESTRATION"`
-	IntervalExecutionDuration      time.Duration       `default:"60s" envconfig:"INTERVAL_EXECUTION_DURATION"`
-	NumOfTradeIterationsInInterval int                 `default:"2" envconfig:"NUM_OF_TRADE_ITERATIONS_IN_INTERVAL"`
-	ListenAddress                  string              `default:":8080" envconfig:"LISTEN_ADDRESS"`
-	Exchange                       exchanges.Exchange  `required:"1" envconfig:"EXCHANGE_NAME"`
-	ExchangeAPIKey                 string              `required:"1" envconfig:"EXCHANGE_API_KEY"`
-	ExchangeAPISecret              string              `required:"1" envconfig:"EXCHANGE_API_SECRET"`
-	Symbol                         string              `required:"1" envconfig:"SYMBOL"`
+	Service struct {
+		Name          string              `default:"trader" envconfig:"SERVICE_NAME"`
+		Orchestration utils.Orchestration `default:"executor" envconfig:"SERVICE_ORCHESTRATION"`
+	}
+
+	Executor struct {
+		IntervalExecutionDuration      time.Duration `default:"60s" envconfig:"INTERVAL_EXECUTION_DURATION"`
+		NumOfTradeIterationsInInterval int           `default:"2" envconfig:"NUM_OF_TRADE_ITERATIONS_IN_INTERVAL"`
+		ListenAddress                  string        `default:":8080" envconfig:"LISTEN_ADDRESS"`
+	}
+
+	Exchange struct {
+		Name              exchanges.Exchange `required:"1" envconfig:"EXCHANGE_NAME"`
+		ExchangeAPIKey    string             `required:"1" envconfig:"EXCHANGE_API_KEY"`
+		ExchangeAPISecret string             `required:"1" envconfig:"EXCHANGE_API_SECRET"`
+	}
+
+	Trade struct {
+		Symbol          string  `required:"1" envconfig:"SYMBOL"`
+		SpreadMarginMin float64 `default:":0" envconfig:"SPREAD_MARGIN_MIN"`
+		SpreadMarginMax float64 `default:":1" envconfig:"SPREAD_MARGIN_MAX"`
+		TradeAmountMin  float64 `required:"1" envconfig:"TRADE_AMOUNT_MIN"`
+		TradeAmountMax  float64 `required:"1" envconfig:"TRADE_AMOUNT_MAX"`
+	}
 
 	GraceFullShutdown time.Duration `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`
 
@@ -39,19 +54,23 @@ func LoadConfig(cfg *Configuration) error {
 
 func (cfg *Configuration) GetLogger() log.Logger {
 	if cfg.logger == nil {
-		cfg.logger = log.With(log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout)),
-			"ts", log.DefaultTimestampUTC, "name", cfg.ServiceName, "symbol", cfg.Symbol)
+		cfg.logger = log.With(
+			log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout)),
+			"ts", log.DefaultTimestampUTC,
+			"name", cfg.Service.Name,
+			"symbol", cfg.Trade.Symbol,
+		)
 	}
 	return cfg.logger
 }
 
 func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.ExchangeClient, error) {
 	logger := cfg.GetLogger()
-	switch cfg.Exchange {
+	switch cfg.Exchange.Name {
 	case exchanges.Biconomy:
 		apiClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
-			APIKey:    cfg.ExchangeAPIKey,
-			APISecret: cfg.ExchangeAPISecret,
+			APIKey:    cfg.Exchange.ExchangeAPIKey,
+			APISecret: cfg.Exchange.ExchangeAPISecret,
 			Logger:    logger,
 		})
 		if err != nil {
@@ -61,8 +80,8 @@ func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.Exc
 		return apiClient, nil
 	case exchanges.Bybit:
 		apiClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
-			APIKey:    cfg.ExchangeAPIKey,
-			APISecret: cfg.ExchangeAPISecret,
+			APIKey:    cfg.Exchange.ExchangeAPIKey,
+			APISecret: cfg.Exchange.ExchangeAPISecret,
 			Logger:    logger,
 		})
 		if err != nil {

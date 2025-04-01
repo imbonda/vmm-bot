@@ -19,9 +19,13 @@ type traderExecutor struct {
 
 func NewTraderService(ctx context.Context, input *models.NewTraderServiceInput) (interfaces.TraderService, error) {
 	traderClient, err := trader.NewTrader(ctx, &trader.NewTraderInput{
-		ExchangeClient: input.ExchangeClient,
-		Symbol:         input.Symbol,
-		Logger:         input.Logger,
+		ExchangeClient:  input.ExchangeClient,
+		Symbol:          input.Trade.Symbol,
+		SpreadMarginMin: input.Trade.SpreadMarginMin,
+		SpreadMarginMax: input.Trade.SpreadMarginMax,
+		TradeAmountMin:  input.Trade.TradeAmountMin,
+		TradeAmountMax:  input.Trade.TradeAmountMax,
+		Logger:          input.Logger,
 	})
 	if err != nil {
 		return nil, err
@@ -30,8 +34,8 @@ func NewTraderService(ctx context.Context, input *models.NewTraderServiceInput) 
 		ctx,
 		&utils.NewIterationsExecutorInput[*trader.Trader]{
 			Callee:                         traderClient,
-			IntervalExecutionDuration:      input.IntervalExecutionDuration,
-			NumOfTradeIterationsInInterval: input.NumOfTradeIterationsInInterval,
+			IntervalExecutionDuration:      input.Executor.IntervalExecutionDuration,
+			NumOfTradeIterationsInInterval: input.Executor.NumOfTradeIterationsInInterval,
 			Logger:                         input.Logger,
 		})
 	if err != nil {

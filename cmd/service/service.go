@@ -21,23 +21,22 @@ func GetTraderService(ctx context.Context, cfg *config.Configuration) (interface
 		level.Error(logger).Log("msg", "failed to create bybit client", "err", err)
 		return nil, err
 	}
-	if cfg.ServiceOrchestration == utils.Executor {
+	if cfg.Service.Orchestration == utils.Executor {
 		return executor.NewTraderService(ctx, &models.NewTraderServiceInput{
-			ExchangeClient:                 exchangeClient,
-			Symbol:                         cfg.Symbol,
-			IntervalExecutionDuration:      cfg.IntervalExecutionDuration,
-			NumOfTradeIterationsInInterval: cfg.NumOfTradeIterationsInInterval,
-			Logger:                         logger,
+			ExchangeClient: exchangeClient,
+			Trade:          models.TradeConfig(cfg.Trade),
+			Executor:       models.ExecutorConfig(cfg.Executor),
+			Logger:         logger,
 		})
-	} else if cfg.ServiceOrchestration == utils.HTTP {
+	} else if cfg.Service.Orchestration == utils.HTTP {
 		return http.NewTraderService(ctx, &models.NewTraderServiceInput{
 			ExchangeClient: exchangeClient,
-			Symbol:         cfg.Symbol,
-			ListenAddress:  cfg.ListenAddress,
+			Trade:          models.TradeConfig(cfg.Trade),
+			Executor:       models.ExecutorConfig(cfg.Executor),
 			Logger:         logger,
 		})
 	} else {
-		level.Error(logger).Log("msg", "invalid orchestration", "orchestration", cfg.ServiceOrchestration)
+		level.Error(logger).Log("msg", "invalid orchestration", "orchestration", cfg.Service.Orchestration)
 		return nil, fmt.Errorf("invalid orchestration")
 	}
 }

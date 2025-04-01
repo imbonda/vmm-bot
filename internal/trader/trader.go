@@ -2,26 +2,33 @@ package trader
 
 import (
 	"context"
-	"math/rand"
 	"runtime/debug"
-	"time"
 
 	"github.com/go-kit/log"
 
 	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
+	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
 type Trader struct {
-	exchangeClient interfaces.ExchangeClient
-	symbol         string
-	logger         log.Logger
+	exchangeClient  interfaces.ExchangeClient
+	symbol          string
+	spreadMarginMin float64
+	spreadMarginMax float64
+	tradeQtyMin     float64
+	tradeQtyMax     float64
+	logger          log.Logger
 }
 
 type NewTraderInput struct {
-	ExchangeClient interfaces.ExchangeClient
-	Symbol         string
-	Logger         log.Logger
+	ExchangeClient  interfaces.ExchangeClient
+	Symbol          string
+	SpreadMarginMin float64
+	SpreadMarginMax float64
+	TradeAmountMin  float64
+	TradeAmountMax  float64
+	Logger          log.Logger
 }
 
 type tradeParams struct {
@@ -32,9 +39,13 @@ type tradeParams struct {
 
 func NewTrader(ctx context.Context, input *NewTraderInput) (*Trader, error) {
 	return &Trader{
-		exchangeClient: input.ExchangeClient,
-		symbol:         input.Symbol,
-		logger:         input.Logger,
+		exchangeClient:  input.ExchangeClient,
+		symbol:          input.Symbol,
+		spreadMarginMin: input.SpreadMarginMin,
+		spreadMarginMax: input.SpreadMarginMax,
+		tradeQtyMin:     input.TradeAmountMin,
+		tradeQtyMax:     input.TradeAmountMax,
+		logger:          input.Logger,
 	}, nil
 }
 
@@ -91,18 +102,12 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 }
 
 func (t *Trader) getRandPriceInSpread(ctx context.Context, spread *models.Spread) float64 {
-	// Define the 10%-90% subrange
-	adjustedMin := spread.Bid + 0.2*spread.Diff
-	adjustedMax := spread.Bid + 0.8*spread.Diff
-
-	// Seed random generator.
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	// Generate random price in the limited range
-	randomPrice := adjustedMin + r.Float64()*(adjustedMax-adjustedMin)
-	return randomPrice
+	return utils.RandInRange(
+		spread.Bid+t.spreadMarginMin*spread.Diff,
+		spread.Bid+t.spreadMarginMax*spread.Diff,
+	)
 }
 
 func (t *Trader) getRandQty(ctx context.Context) float64 {
-	return 0
+	return utils.RandInRange(t.tradeQtyMin, t.tradeQtyMax)
 }
