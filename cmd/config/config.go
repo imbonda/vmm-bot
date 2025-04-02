@@ -37,10 +37,12 @@ type Configuration struct {
 
 	Trade struct {
 		Symbol          string  `required:"1" envconfig:"SYMBOL"`
-		SpreadMarginMin float64 `default:":0" envconfig:"SPREAD_MARGIN_MIN"`
-		SpreadMarginMax float64 `default:":1" envconfig:"SPREAD_MARGIN_MAX"`
+		SpreadMarginMin float64 `default:"0" envconfig:"SPREAD_MARGIN_MIN"`
+		SpreadMarginMax float64 `default:"1" envconfig:"SPREAD_MARGIN_MAX"`
 		TradeAmountMin  float64 `required:"1" envconfig:"TRADE_AMOUNT_MIN"`
 		TradeAmountMax  float64 `required:"1" envconfig:"TRADE_AMOUNT_MAX"`
+		PriceDecimals   int     `default:"2" envconfig:"PRICE_DECIMALS_PRECISION"`
+		AmountDecimals  int     `default:"2" envconfig:"AMOUNT_DECIMALS_PRECISION"`
 	}
 
 	GraceFullShutdown time.Duration `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`

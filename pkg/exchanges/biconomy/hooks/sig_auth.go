@@ -26,7 +26,6 @@ func addSignatureAuthentication(request *resty.Request, creds *utils.Credentials
 	formData["api_key"] = []string{creds.APIKey}
 	signature := generateSignature(formData, creds)
 	formData["sign"] = []string{signature}
-	request.SetFormDataFromValues(formData)
 	return nil
 }
 
@@ -49,7 +48,7 @@ func generateSignature(formData url.Values, creds *utils.Credentials) string {
 	queryString.WriteString(fmt.Sprintf("secret_key=%s", creds.APISecret))
 
 	// Step 5: Generate signature
-	sig := utils.SHA256(queryString.String())
+	sig := utils.MD5(queryString.String())
 
 	// Step 6: Uppercase
 	return strings.ToUpper(sig)

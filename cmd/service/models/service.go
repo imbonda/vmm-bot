@@ -14,6 +14,8 @@ type TradeConfig struct {
 	SpreadMarginMax float64
 	TradeAmountMin  float64
 	TradeAmountMax  float64
+	PriceDecimals   int
+	AmountDecimals  int
 }
 
 type ExecutorConfig struct {

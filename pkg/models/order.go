@@ -9,7 +9,7 @@ const (
 
 type Order struct {
 	Symbol string
+	Price  string
+	Qty    string
 	Action OrderAction
-	Price  float64
-	Qty    float64
 }

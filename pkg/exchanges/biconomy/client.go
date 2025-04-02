@@ -14,7 +14,7 @@ import (
 
 // API Configuration
 const (
-	BaseAPIURL = "https://www.biconomy.com"
+	BaseAPIURL = "https://market.biconomy.vip"
 	APIV1      = "api/v1"
 	APIV2      = "api/v2"
 )
@@ -113,15 +113,15 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 
 	payload := map[string]string{
 		"market": order.Symbol,
+		"amount": order.Qty,
+		"price":  order.Price,
 		"side":   string(resolveSide(order.Action)),
-		"amount": utils.FormatFloatToString(order.Qty),
-		"price":  utils.FormatFloatToString(order.Price),
 	}
 
 	resp, err := api.client.R().
 		SetFormData(payload).
 		SetResult(&result).
-		Post(api.v2.Join("private/trade/limit"))
+		Post(api.v1.Join("private/trade/limit"))
 
 	if err != nil {
 		return err

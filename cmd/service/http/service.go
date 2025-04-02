@@ -34,6 +34,8 @@ func NewTraderService(ctx context.Context, input *models.NewTraderServiceInput) 
 		SpreadMarginMax: input.Trade.SpreadMarginMax,
 		TradeAmountMin:  input.Trade.TradeAmountMin,
 		TradeAmountMax:  input.Trade.TradeAmountMax,
+		PriceDecimals:   input.Trade.PriceDecimals,
+		AmountDecimals:  input.Trade.AmountDecimals,
 		Logger:          input.Logger,
 	})
 	if err != nil {
