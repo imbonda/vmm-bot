@@ -2,30 +2,33 @@ package hooks
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"sort"
 	"strings"
 
 	"github.com/go-resty/resty/v2"
+
 	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
 
-type Hook = resty.RequestMiddleware
-
-func GetSigAuthBeforeRequestHook(client *resty.Client, creds *utils.Credentials) Hook {
+func GetSigAuthBeforeRequestHook(client *resty.Client, creds *utils.Credentials) resty.RequestMiddleware {
 	return func(client *resty.Client, request *resty.Request) error {
 		return addSignatureAuthentication(request, creds)
 	}
 }
 
 func addSignatureAuthentication(request *resty.Request, creds *utils.Credentials) error {
-	if request.Method != "POST" {
+	if request.Method != http.MethodPost {
 		return nil
 	}
-	formData := request.FormData
-	formData["api_key"] = []string{creds.APIKey}
-	signature := generateSignature(formData, creds)
-	formData["sign"] = []string{signature}
+	request.SetFormData(map[string]string{
+		"api_key": creds.APIKey,
+	})
+	signature := generateSignature(request.FormData, creds)
+	request.SetFormData(map[string]string{
+		"sign": signature,
+	})
 	return nil
 }
 
