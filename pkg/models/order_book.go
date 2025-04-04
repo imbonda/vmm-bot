@@ -2,71 +2,54 @@ package models
 
 import (
 	"fmt"
-	"strconv"
 )
 
 type OrderBook struct {
 	Symbol  string     `json:"s"`
 	Asks    [][]string `json:"a"`
 	Bids    [][]string `json:"b"`
-	bestAsk *float64
-	bestBid *float64
+	bestAsk *string
+	bestBid *string
 }
 
-type Spread struct {
-	Ask  float64
-	Bid  float64
-	Diff float64
-}
-
-func (b *OrderBook) Ask() (float64, error) {
+func (b *OrderBook) Ask() (string, error) {
 	if b.bestAsk != nil {
 		return *b.bestAsk, nil
 	}
 	if len(b.Asks) == 0 {
-		return 0, nil
+		return "", nil
 	}
 	if len(b.Asks[0]) < 2 {
-		return 0, fmt.Errorf("invalid order book")
+		return "", fmt.Errorf("invalid order book")
 	}
-	askPrice, err := strconv.ParseFloat(b.Asks[0][0], 64)
-	if err != nil {
-		return 0, err
-	}
+	askPrice := b.Asks[0][0]
 	b.bestAsk = &askPrice
 	return askPrice, nil
 }
 
-func (b *OrderBook) Bid() (float64, error) {
+func (b *OrderBook) Bid() (string, error) {
 	if b.bestBid != nil {
 		return *b.bestBid, nil
 	}
 	if len(b.Bids) == 0 {
-		return 0, nil
+		return "", nil
 	}
 	if len(b.Bids[0]) < 2 {
-		return 0, fmt.Errorf("invalid order book")
+		return "", fmt.Errorf("invalid order book")
 	}
-	bidPrice, err := strconv.ParseFloat(b.Bids[0][0], 64)
-	if err != nil {
-		return 0, err
-	}
+	bidPrice := b.Bids[0][0]
 	b.bestBid = &bidPrice
 	return bidPrice, nil
 }
 
 func (b *OrderBook) Spread() (*Spread, error) {
-	askPrice, err := b.Ask()
+	ask, err := b.Ask()
 	if err != nil {
 		return nil, err
 	}
-	bidPrice, err := b.Bid()
+	bid, err := b.Bid()
 	if err != nil {
 		return nil, err
 	}
-	return &Spread{
-		Ask:  askPrice,
-		Bid:  bidPrice,
-		Diff: askPrice - bidPrice,
-	}, nil
+	return NewSpread(ask, bid)
 }

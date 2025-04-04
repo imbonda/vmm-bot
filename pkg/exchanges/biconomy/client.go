@@ -8,6 +8,7 @@ import (
 	"github.com/go-resty/resty/v2"
 
 	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy/hooks"
+	biconomyModels "github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy/models"
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
 	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
 )
@@ -17,12 +18,6 @@ const (
 	BaseAPIURL = "https://market.biconomy.vip"
 	APIV1      = "api/v1"
 	APIV2      = "api/v2"
-)
-
-type returnCode int
-
-const (
-	successCode returnCode = 0
 )
 
 type tradingSide string
@@ -75,43 +70,51 @@ func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 }
 
 func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
-	var result struct {
-		Asks [][]string `json:"asks"`
-		Bids [][]string `json:"bids"`
-	}
+	var res biconomyModels.RawOrderBook
 	resp, err := api.client.R().
-		SetResult(&result).
+		SetResult(&res).
 		SetQueryParam("symbol", symbol).
 		Get(api.v1.Join("depth"))
 	if err != nil {
 		return nil, err
 	}
 	if resp.IsError() {
-		return nil, fmt.Errorf("orderBook Biconomy API error: %s", resp.Status())
+		return nil, fmt.Errorf("biconomy orderbook request failed: %s", resp.Status())
 	}
 	return &models.OrderBook{
 		Symbol: symbol,
-		Asks:   result.Asks,
-		Bids:   result.Bids,
+		Asks:   res.Asks,
+		Bids:   res.Bids,
+	}, nil
+}
+
+func (api *Client) GetLatestTicker(ctx context.Context, symbol string) (*models.Ticker, error) {
+	var res biconomyModels.RawTickersResult
+	resp, err := api.client.R().
+		SetResult(&res).
+		Get(api.v1.Join("tickers"))
+	if err != nil {
+		return nil, err
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("biconomy tickers request failed: %s", resp.Status())
+	}
+	ticker, err := res.LatestTicker(symbol)
+	if err != nil {
+		return nil, err
+	}
+	return &models.Ticker{
+		Symbol:    ticker.Symbol,
+		LastPrice: ticker.LastPrice,
+		BestAsk:   ticker.Ask,
+		BestBid:   ticker.Bid,
 	}, nil
 }
 
 func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
-	var result struct {
-		Code    int    `json:"code"`
-		Message string `json:"message"`
-		Result  struct {
-			Amount     string  `json:"amount"`
-			OrderID    int     `json:"id"`
-			Market     string  `json:"market"`
-			Price      string  `json:"price"`
-			Side       int     `json:"side"`
-			CreatedAt  float64 `json:"ctime"`
-			ModifiedAt float64 `json:"mtime"`
-		} `json:"result"`
-	}
+	var res biconomyModels.Response[biconomyModels.RawFulfilledOrder]
 
-	payload := map[string]string{
+	formData := map[string]string{
 		"market": order.Symbol,
 		"amount": order.Qty,
 		"price":  order.Price,
@@ -119,16 +122,16 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 	}
 
 	resp, err := api.client.R().
-		SetFormData(payload).
-		SetResult(&result).
+		SetFormData(formData).
+		SetResult(&res).
 		Post(api.v1.Join("private/trade/limit"))
 
 	if err != nil {
 		return err
 	}
 
-	if resp.IsError() || result.Code != int(successCode) {
-		return fmt.Errorf("placeOrder Biconomy API error: %s", result.Message)
+	if resp.IsError() || !res.IsSuccessful() {
+		return fmt.Errorf("biconomy placeOrder request failed: %s", res.Message)
 	}
 
 	return nil

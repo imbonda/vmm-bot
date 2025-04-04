@@ -9,6 +9,7 @@ require (
 	github.com/go-kit/log v0.2.1
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/samber/lo v1.49.1
 	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0

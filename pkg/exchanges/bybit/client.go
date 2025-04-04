@@ -3,11 +3,11 @@ package bybit
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	bybit "github.com/bybit-exchange/bybit.go.api"
 	"github.com/go-kit/log"
 
+	bybitModels "github.com/imbonda/bybit-vmm-bot/pkg/exchanges/bybit/models"
 	"github.com/imbonda/bybit-vmm-bot/pkg/models"
 )
 
@@ -22,18 +22,12 @@ type NewClientInput struct {
 	Logger    log.Logger
 }
 
-type returnCode int
-
-const (
-	successCode returnCode = 0
-)
-
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 	return &Client{
 		client: bybit.NewBybitHttpClient(
 			input.APISecret,
 			input.APISecret,
-			bybit.WithBaseURL(bybit.TESTNET),
+			bybit.WithBaseURL(bybit.MAINNET),
 		),
 	}, nil
 }
@@ -41,7 +35,7 @@ func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
 	res, err := api.client.
 		NewUtaBybitServiceWithParams(
-			map[string]interface{}{
+			map[string]any{
 				"category": "spot",
 				"symbol":   symbol,
 			},
@@ -50,7 +44,8 @@ func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Ord
 	if err != nil {
 		return nil, err
 	}
-	if err = validateResponse(ctx, res); err != nil {
+	wrappedRes := bybitModels.Response(*res)
+	if err = wrappedRes.Validate(); err != nil {
 		return nil, err
 	}
 	data, err := json.Marshal(res.Result)
@@ -62,10 +57,48 @@ func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Ord
 	return result, err
 }
 
-func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
-	_, err := api.client.
+func (api *Client) GetLatestTicker(ctx context.Context, symbol string) (*models.Ticker, error) {
+	res, err := api.client.
 		NewUtaBybitServiceWithParams(
-			map[string]interface{}{
+			map[string]any{
+				"category": "spot",
+				"symbol":   symbol,
+			},
+		).
+		GetMarketTickers(ctx)
+	if err != nil {
+		return nil, err
+	}
+	wrappedRes := bybitModels.Response(*res)
+	if err = wrappedRes.Validate(); err != nil {
+		return nil, err
+	}
+	data, err := json.Marshal(res.Result)
+	if err != nil {
+		return nil, err
+	}
+	rawResult := &bybitModels.RawTickersResult{}
+	err = json.Unmarshal(data, rawResult)
+	if err != nil {
+		return nil, err
+	}
+	ticker, err := rawResult.LatestTicker()
+	if err != nil {
+		return nil, err
+	}
+	result := &models.Ticker{
+		Symbol:    ticker.Symbol,
+		LastPrice: ticker.LastPrice,
+		BestAsk:   ticker.BestAskPrice,
+		BestBid:   ticker.BestBidPrice,
+	}
+	return result, nil
+}
+
+func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
+	res, err := api.client.
+		NewUtaBybitServiceWithParams(
+			map[string]any{
 				"category":    "linear",
 				"symbol":      order.Symbol,
 				"side":        order.Action,
@@ -77,12 +110,11 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 			},
 		).
 		PlaceOrder(context.Background())
-	return err
-}
-
-func validateResponse(ctx context.Context, res *bybit.ServerResponse) error {
-	if returnCode(res.RetCode) != successCode {
-		err := fmt.Errorf("request failed: %v", res.RetMsg)
+	if err != nil {
+		return err
+	}
+	wrappedRes := bybitModels.Response(*res)
+	if err = wrappedRes.Validate(); err != nil {
 		return err
 	}
 	return nil

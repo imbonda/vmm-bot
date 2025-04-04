@@ -108,11 +108,11 @@ func (t *Trader) placeOrder(ctx context.Context, orderInput *tradeParams, action
 }
 
 func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
-	orderBook, err := t.exchangeClient.GetOrderBook(ctx, t.symbol)
+	ticker, err := t.exchangeClient.GetLatestTicker(ctx, t.symbol)
 	if err != nil {
 		return nil, err
 	}
-	spread, err := orderBook.Spread()
+	spread, err := ticker.Spread()
 	if err != nil {
 		return nil, err
 	}

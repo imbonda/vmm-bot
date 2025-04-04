@@ -30,9 +30,15 @@ type Configuration struct {
 	}
 
 	Exchange struct {
-		Name              exchanges.Exchange `required:"1" envconfig:"EXCHANGE_NAME"`
-		ExchangeAPIKey    string             `required:"1" envconfig:"EXCHANGE_API_KEY"`
-		ExchangeAPISecret string             `required:"1" envconfig:"EXCHANGE_API_SECRET"`
+		Name  exchanges.Exchange `required:"1" envconfig:"EXCHANGE_NAME"`
+		Bybit struct {
+			ExchangeAPIKey    string `required:"1" envconfig:"BYBIT_API_KEY"`
+			ExchangeAPISecret string `required:"1" envconfig:"BYBIT_API_SECRET"`
+		}
+		Biconomy struct {
+			ExchangeAPIKey    string `required:"1" envconfig:"BICONOMY_API_KEY"`
+			ExchangeAPISecret string `required:"1" envconfig:"BICONOMY_API_SECRET"`
+		}
 	}
 
 	Trade struct {
@@ -71,8 +77,8 @@ func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.Exc
 	switch cfg.Exchange.Name {
 	case exchanges.Biconomy:
 		apiClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
-			APIKey:    cfg.Exchange.ExchangeAPIKey,
-			APISecret: cfg.Exchange.ExchangeAPISecret,
+			APIKey:    cfg.Exchange.Biconomy.ExchangeAPIKey,
+			APISecret: cfg.Exchange.Biconomy.ExchangeAPISecret,
 			Logger:    logger,
 		})
 		if err != nil {
@@ -82,8 +88,8 @@ func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.Exc
 		return apiClient, nil
 	case exchanges.Bybit:
 		apiClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
-			APIKey:    cfg.Exchange.ExchangeAPIKey,
-			APISecret: cfg.Exchange.ExchangeAPISecret,
+			APIKey:    cfg.Exchange.Bybit.ExchangeAPIKey,
+			APISecret: cfg.Exchange.Bybit.ExchangeAPISecret,
 			Logger:    logger,
 		})
 		if err != nil {

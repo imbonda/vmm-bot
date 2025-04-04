@@ -9,3 +9,7 @@ func FormatFloatToString(value float64, precision int) string {
 	}
 	return strconv.FormatFloat(value, 'f', -1, 64)
 }
+
+func ParseFloat(str string) (float64, error) {
+	return strconv.ParseFloat(str, 64)
+}
