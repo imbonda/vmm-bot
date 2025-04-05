@@ -1,0 +1,32 @@
+version: '3.9'
+
+x-prod-env-variables: &prod-env-variables
+  LOGGER_LEVEL: debug
+
+x-vmm-bot: &vmm-bot-service
+  deploy:
+    replicas: 1
+  env_file:
+    - .env
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: 1
+  image: vmm-bot:1.0.0
+  restart: unless-stopped
+
+services:
+  biconomy-vmm-bot:
+    <<: *vmm-bot-service
+    environment:
+      <<: *prod-env-variables
+      SERVICE_NAME: biconomy-vmm-bot
+      EXCHANGE_NAME: biconomy
+    build:
+      # Note:
+      # The image is built only once by running "docker compose build".
+      # The image is then referred by other services via the name tag. 
+      context: .
+      dockerfile: Dockerfile
+    container_name: biconomy-vmm-bot

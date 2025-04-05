@@ -157,7 +157,7 @@ func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, 
 	max := math.Min(spreadMax, upperLimit)
 
 	if min >= max {
-		min, max = lowerLimit, upperLimit
+		min, max = spreadMin, spreadMax
 	}
 	return utils.RandInRange(min, max)
 }

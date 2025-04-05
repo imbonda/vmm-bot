@@ -54,7 +54,10 @@ type Configuration struct {
 		AmountDecimals  int     `default:"2" envconfig:"AMOUNT_DECIMALS_PRECISION"`
 	}
 
-	logger log.Logger
+	Log struct {
+		Level  string `default:"all" envconfig:"LOGGER_LEVEL"`
+		logger log.Logger
+	}
 }
 
 func LoadConfig(cfg *Configuration) error {
@@ -62,15 +65,31 @@ func LoadConfig(cfg *Configuration) error {
 }
 
 func (cfg *Configuration) GetLogger() log.Logger {
-	if cfg.logger == nil {
-		cfg.logger = log.With(
+	if cfg.Log.logger == nil {
+		logger := log.With(
 			log.NewLogfmtLogger(log.NewSyncWriter(os.Stdout)),
 			"ts", log.DefaultTimestampUTC,
 			"name", cfg.Service.Name,
 			"symbol", cfg.Trade.Symbol,
 		)
+		var logLevel level.Option
+		switch cfg.Log.Level {
+		case "debug":
+			logLevel = level.AllowDebug()
+		case "info":
+			logLevel = level.AllowInfo()
+		case "warn":
+			logLevel = level.AllowWarn()
+		case "error":
+			logLevel = level.AllowError()
+		case "none":
+			logLevel = level.AllowNone()
+		default:
+			logLevel = level.AllowAll()
+		}
+		cfg.Log.logger = level.NewFilter(logger, logLevel)
 	}
-	return cfg.logger
+	return cfg.Log.logger
 }
 
 func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.ExchangeClient, error) {
