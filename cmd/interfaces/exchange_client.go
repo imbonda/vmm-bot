@@ -3,7 +3,7 @@ package interfaces
 import (
 	"context"
 
-	"github.com/imbonda/bybit-vmm-bot/pkg/models"
+	"github.com/imbonda/vmm-bot/pkg/models"
 )
 
 type ExchangeClient interface {

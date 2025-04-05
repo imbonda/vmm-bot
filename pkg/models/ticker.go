@@ -3,7 +3,7 @@ package models
 import (
 	"fmt"
 
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 type Ticker struct {

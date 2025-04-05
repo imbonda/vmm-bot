@@ -7,10 +7,10 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-resty/resty/v2"
 
-	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy/hooks"
-	biconomyModels "github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/pkg/exchanges/biconomy/hooks"
+	biconomyModels "github.com/imbonda/vmm-bot/pkg/exchanges/biconomy/models"
+	"github.com/imbonda/vmm-bot/pkg/models"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 // API Configuration

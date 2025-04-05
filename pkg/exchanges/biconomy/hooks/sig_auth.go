@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-resty/resty/v2"
 
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 func GetSigAuthBeforeRequestHook(client *resty.Client, creds *utils.Credentials) resty.RequestMiddleware {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-kit/log"
 
-	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
+	"github.com/imbonda/vmm-bot/cmd/interfaces"
 )
 
 type TradeConfig struct {

@@ -5,10 +5,10 @@ import (
 
 	"github.com/go-kit/log"
 
-	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
-	"github.com/imbonda/bybit-vmm-bot/cmd/service/models"
-	"github.com/imbonda/bybit-vmm-bot/internal/trader"
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/cmd/interfaces"
+	"github.com/imbonda/vmm-bot/cmd/service/models"
+	"github.com/imbonda/vmm-bot/internal/trader"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 type traderExecutor struct {

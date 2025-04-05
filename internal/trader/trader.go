@@ -8,9 +8,9 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 
-	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
-	"github.com/imbonda/bybit-vmm-bot/pkg/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/cmd/interfaces"
+	"github.com/imbonda/vmm-bot/pkg/models"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 type Trader struct {

@@ -10,11 +10,11 @@ import (
 	"github.com/go-kit/log/level"
 	"github.com/kelseyhightower/envconfig"
 
-	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
-	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges"
-	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/biconomy"
-	"github.com/imbonda/bybit-vmm-bot/pkg/exchanges/bybit"
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/cmd/interfaces"
+	"github.com/imbonda/vmm-bot/pkg/exchanges"
+	"github.com/imbonda/vmm-bot/pkg/exchanges/biconomy"
+	"github.com/imbonda/vmm-bot/pkg/exchanges/bybit"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 type Configuration struct {

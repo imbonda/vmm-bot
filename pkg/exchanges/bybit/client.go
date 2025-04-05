@@ -7,8 +7,8 @@ import (
 	bybit "github.com/bybit-exchange/bybit.go.api"
 	"github.com/go-kit/log"
 
-	bybitModels "github.com/imbonda/bybit-vmm-bot/pkg/exchanges/bybit/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/models"
+	bybitModels "github.com/imbonda/vmm-bot/pkg/exchanges/bybit/models"
+	"github.com/imbonda/vmm-bot/pkg/models"
 )
 
 type Client struct {

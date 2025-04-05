@@ -1,4 +1,4 @@
-module github.com/imbonda/bybit-vmm-bot
+module github.com/imbonda/vmm-bot
 
 go 1.22.3
 

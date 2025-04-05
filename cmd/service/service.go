@@ -6,12 +6,12 @@ import (
 
 	"github.com/go-kit/log/level"
 
-	"github.com/imbonda/bybit-vmm-bot/cmd/config"
-	"github.com/imbonda/bybit-vmm-bot/cmd/interfaces"
-	"github.com/imbonda/bybit-vmm-bot/cmd/service/executor"
-	"github.com/imbonda/bybit-vmm-bot/cmd/service/http"
-	"github.com/imbonda/bybit-vmm-bot/cmd/service/models"
-	"github.com/imbonda/bybit-vmm-bot/pkg/utils"
+	"github.com/imbonda/vmm-bot/cmd/config"
+	"github.com/imbonda/vmm-bot/cmd/interfaces"
+	"github.com/imbonda/vmm-bot/cmd/service/executor"
+	"github.com/imbonda/vmm-bot/cmd/service/http"
+	"github.com/imbonda/vmm-bot/cmd/service/models"
+	"github.com/imbonda/vmm-bot/pkg/utils"
 )
 
 func GetTraderService(ctx context.Context, cfg *config.Configuration) (interfaces.TraderService, error) {

@@ -10,8 +10,8 @@ import (
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
 
-	"github.com/imbonda/bybit-vmm-bot/cmd/config"
-	"github.com/imbonda/bybit-vmm-bot/cmd/service"
+	"github.com/imbonda/vmm-bot/cmd/config"
+	"github.com/imbonda/vmm-bot/cmd/service"
 )
 
 var (
