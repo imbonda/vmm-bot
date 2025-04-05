@@ -25,7 +25,7 @@ type NewClientInput struct {
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 	return &Client{
 		client: bybit.NewBybitHttpClient(
-			input.APISecret,
+			input.APIKey,
 			input.APISecret,
 			bybit.WithBaseURL(bybit.MAINNET),
 		),
@@ -99,7 +99,7 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 	res, err := api.client.
 		NewUtaBybitServiceWithParams(
 			map[string]any{
-				"category":    "linear",
+				"category":    "spot",
 				"symbol":      order.Symbol,
 				"side":        order.Action,
 				"positionIdx": 0,
