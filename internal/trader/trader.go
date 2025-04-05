@@ -2,6 +2,7 @@ package trader
 
 import (
 	"context"
+	"math"
 	"runtime/debug"
 
 	"github.com/go-kit/log"
@@ -13,27 +14,33 @@ import (
 )
 
 type Trader struct {
-	exchangeClient  interfaces.ExchangeClient
-	symbol          string
-	spreadMarginMin float64
-	spreadMarginMax float64
-	tradeQtyMin     float64
-	tradeQtyMax     float64
-	priceDecimals   int
-	amountDecimals  int
-	logger          log.Logger
+	exchangeClient    interfaces.ExchangeClient
+	priceOracleClient interfaces.ExchangeClient
+	symbol            string
+	oracleSymbol      string
+	candleHeight      float64
+	spreadMarginMin   float64
+	spreadMarginMax   float64
+	tradeQtyMin       float64
+	tradeQtyMax       float64
+	priceDecimals     int
+	amountDecimals    int
+	logger            log.Logger
 }
 
 type NewTraderInput struct {
-	ExchangeClient  interfaces.ExchangeClient
-	Symbol          string
-	SpreadMarginMin float64
-	SpreadMarginMax float64
-	TradeAmountMin  float64
-	TradeAmountMax  float64
-	PriceDecimals   int
-	AmountDecimals  int
-	Logger          log.Logger
+	ExchangeClient    interfaces.ExchangeClient
+	PriceOracleClient interfaces.ExchangeClient
+	Symbol            string
+	OracleSymbol      string
+	CandleHeight      float64
+	SpreadMarginMin   float64
+	SpreadMarginMax   float64
+	TradeAmountMin    float64
+	TradeAmountMax    float64
+	PriceDecimals     int
+	AmountDecimals    int
+	Logger            log.Logger
 }
 
 type tradeParams struct {
@@ -44,15 +51,18 @@ type tradeParams struct {
 
 func NewTrader(ctx context.Context, input *NewTraderInput) (*Trader, error) {
 	return &Trader{
-		exchangeClient:  input.ExchangeClient,
-		symbol:          input.Symbol,
-		spreadMarginMin: input.SpreadMarginMin,
-		spreadMarginMax: input.SpreadMarginMax,
-		tradeQtyMin:     input.TradeAmountMin,
-		tradeQtyMax:     input.TradeAmountMax,
-		priceDecimals:   input.PriceDecimals,
-		amountDecimals:  input.AmountDecimals,
-		logger:          input.Logger,
+		exchangeClient:    input.ExchangeClient,
+		priceOracleClient: input.PriceOracleClient,
+		symbol:            input.Symbol,
+		oracleSymbol:      input.OracleSymbol,
+		candleHeight:      input.CandleHeight,
+		spreadMarginMin:   input.SpreadMarginMin,
+		spreadMarginMax:   input.SpreadMarginMax,
+		tradeQtyMin:       input.TradeAmountMin,
+		tradeQtyMax:       input.TradeAmountMax,
+		priceDecimals:     input.PriceDecimals,
+		amountDecimals:    input.AmountDecimals,
+		logger:            input.Logger,
 	}, nil
 }
 
@@ -116,7 +126,15 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	if err != nil {
 		return nil, err
 	}
-	price := t.getRandPriceInSpread(ctx, spread)
+	oracleTicker, err := t.priceOracleClient.GetLatestTicker(ctx, t.oracleSymbol)
+	if err != nil {
+		return nil, err
+	}
+	lastPrice, err := oracleTicker.Price()
+	if err != nil {
+		return nil, err
+	}
+	price := t.getRandPriceInSpread(ctx, spread, lastPrice)
 	qty := t.getRandQty(ctx)
 	return &tradeParams{
 		shouldTrade: true,
@@ -125,13 +143,25 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	}, nil
 }
 
-func (t *Trader) getRandPriceInSpread(ctx context.Context, spread *models.Spread) float64 {
-	return utils.RandInRange(
-		spread.Bid+t.spreadMarginMin*spread.Diff,
-		spread.Bid+t.spreadMarginMax*spread.Diff,
-	)
+func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, lastPrice float64) float64 {
+	// Calculate the intersection range
+	lowerLimit := lastPrice * (1 - t.candleHeight)
+	upperLimit := lastPrice * (1 + t.candleHeight)
+
+	// Spread bounds
+	spreadMin := spread.Bid + t.spreadMarginMin*spread.Diff
+	spreadMax := spread.Bid + t.spreadMarginMax*spread.Diff
+
+	// Final intersection range
+	min := math.Max(spreadMin, lowerLimit)
+	max := math.Min(spreadMax, upperLimit)
+
+	if min >= max {
+		min, max = lowerLimit, upperLimit
+	}
+	return utils.RandInRange(min, max)
 }
 
-func (t *Trader) getRandQty(ctx context.Context) float64 {
+func (t *Trader) getRandQty(_ context.Context) float64 {
 	return utils.RandInRange(t.tradeQtyMin, t.tradeQtyMax)
 }

@@ -18,22 +18,29 @@ func GetTraderService(ctx context.Context, cfg *config.Configuration) (interface
 	logger := cfg.GetLogger()
 	exchangeClient, err := cfg.GetExchangeClient(ctx)
 	if err != nil {
-		level.Error(logger).Log("msg", "failed to create bybit client", "err", err)
+		level.Error(logger).Log("msg", "failed to create exchange client", "err", err)
+		return nil, err
+	}
+	priceOracleClient, err := cfg.GetPriceOracleClient(ctx)
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to create price oracle client", "err", err)
 		return nil, err
 	}
 	if cfg.Service.Orchestration == utils.Executor {
 		return executor.NewTraderService(ctx, &models.NewTraderServiceInput{
-			ExchangeClient: exchangeClient,
-			Trade:          models.TradeConfig(cfg.Trade),
-			Executor:       models.ExecutorConfig(cfg.Executor),
-			Logger:         logger,
+			ExchangeClient:    exchangeClient,
+			PriceOracleClient: priceOracleClient,
+			Trade:             models.TradeConfig(cfg.Trade),
+			Executor:          models.ExecutorConfig(cfg.Executor),
+			Logger:            logger,
 		})
 	} else if cfg.Service.Orchestration == utils.HTTP {
 		return http.NewTraderService(ctx, &models.NewTraderServiceInput{
-			ExchangeClient: exchangeClient,
-			Trade:          models.TradeConfig(cfg.Trade),
-			Executor:       models.ExecutorConfig(cfg.Executor),
-			Logger:         logger,
+			ExchangeClient:    exchangeClient,
+			PriceOracleClient: priceOracleClient,
+			Trade:             models.TradeConfig(cfg.Trade),
+			Executor:          models.ExecutorConfig(cfg.Executor),
+			Logger:            logger,
 		})
 	} else {
 		level.Error(logger).Log("msg", "invalid orchestration", "orchestration", cfg.Service.Orchestration)

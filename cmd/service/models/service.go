@@ -10,6 +10,8 @@ import (
 
 type TradeConfig struct {
 	Symbol          string
+	OracleSymbol    string
+	CandleHeight    float64
 	SpreadMarginMin float64
 	SpreadMarginMax float64
 	TradeAmountMin  float64
@@ -25,8 +27,9 @@ type ExecutorConfig struct {
 }
 
 type NewTraderServiceInput struct {
-	ExchangeClient interfaces.ExchangeClient
-	Trade          TradeConfig
-	Executor       ExecutorConfig
-	Logger         log.Logger
+	ExchangeClient    interfaces.ExchangeClient
+	PriceOracleClient interfaces.ExchangeClient
+	Trade             TradeConfig
+	Executor          ExecutorConfig
+	Logger            log.Logger
 }

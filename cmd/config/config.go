@@ -19,8 +19,9 @@ import (
 
 type Configuration struct {
 	Service struct {
-		Name          string              `default:"trader" envconfig:"SERVICE_NAME"`
-		Orchestration utils.Orchestration `default:"executor" envconfig:"SERVICE_ORCHESTRATION"`
+		Name              string              `default:"trader" envconfig:"SERVICE_NAME"`
+		Orchestration     utils.Orchestration `default:"executor" envconfig:"SERVICE_ORCHESTRATION"`
+		GraceFullShutdown time.Duration       `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`
 	}
 
 	Executor struct {
@@ -43,15 +44,15 @@ type Configuration struct {
 
 	Trade struct {
 		Symbol          string  `required:"1" envconfig:"SYMBOL"`
+		OracleSymbol    string  `required:"1" envconfig:"ORACLE_SYMBOL"`
+		CandleHeight    float64 `required:"1" envconfig:"CANDLE_HEIGHT"`
 		SpreadMarginMin float64 `default:"0" envconfig:"SPREAD_MARGIN_MIN"`
 		SpreadMarginMax float64 `default:"1" envconfig:"SPREAD_MARGIN_MAX"`
 		TradeAmountMin  float64 `required:"1" envconfig:"TRADE_AMOUNT_MIN"`
 		TradeAmountMax  float64 `required:"1" envconfig:"TRADE_AMOUNT_MAX"`
-		PriceDecimals   int     `default:"2" envconfig:"PRICE_DECIMALS_PRECISION"`
+		PriceDecimals   int     `default:"3" envconfig:"PRICE_DECIMALS_PRECISION"`
 		AmountDecimals  int     `default:"2" envconfig:"AMOUNT_DECIMALS_PRECISION"`
 	}
-
-	GraceFullShutdown time.Duration `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`
 
 	logger log.Logger
 }
@@ -73,31 +74,44 @@ func (cfg *Configuration) GetLogger() log.Logger {
 }
 
 func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.ExchangeClient, error) {
-	logger := cfg.GetLogger()
 	switch cfg.Exchange.Name {
 	case exchanges.Biconomy:
-		apiClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
-			APIKey:    cfg.Exchange.Biconomy.ExchangeAPIKey,
-			APISecret: cfg.Exchange.Biconomy.ExchangeAPISecret,
-			Logger:    logger,
-		})
-		if err != nil {
-			level.Error(logger).Log("msg", "failed to create biconomy client", "err", err)
-			return nil, err
-		}
-		return apiClient, nil
+		return cfg.getBiconomyClient(ctx)
 	case exchanges.Bybit:
-		apiClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
-			APIKey:    cfg.Exchange.Bybit.ExchangeAPIKey,
-			APISecret: cfg.Exchange.Bybit.ExchangeAPISecret,
-			Logger:    logger,
-		})
-		if err != nil {
-			level.Error(logger).Log("msg", "failed to create bybit client", "err", err)
-			return nil, err
-		}
-		return apiClient, nil
+		return cfg.getBybitClient(ctx)
 	default:
 		return nil, fmt.Errorf("failed to resolve exchange client: %s", cfg.Exchange)
 	}
+}
+
+func (cfg *Configuration) GetPriceOracleClient(ctx context.Context) (interfaces.ExchangeClient, error) {
+	return cfg.getBybitClient(ctx)
+}
+
+func (cfg *Configuration) getBiconomyClient(ctx context.Context) (interfaces.ExchangeClient, error) {
+	logger := cfg.GetLogger()
+	apiClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
+		APIKey:    cfg.Exchange.Biconomy.ExchangeAPIKey,
+		APISecret: cfg.Exchange.Biconomy.ExchangeAPISecret,
+		Logger:    logger,
+	})
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to create biconomy client", "err", err)
+		return nil, err
+	}
+	return apiClient, nil
+}
+
+func (cfg *Configuration) getBybitClient(ctx context.Context) (interfaces.ExchangeClient, error) {
+	logger := cfg.GetLogger()
+	apiClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
+		APIKey:    cfg.Exchange.Bybit.ExchangeAPIKey,
+		APISecret: cfg.Exchange.Bybit.ExchangeAPISecret,
+		Logger:    logger,
+	})
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to create bybit client", "err", err)
+		return nil, err
+	}
+	return apiClient, nil
 }
