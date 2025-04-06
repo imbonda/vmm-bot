@@ -14,22 +14,22 @@ import (
 
 func GetSigAuthBeforeRequestHook(client *resty.Client, creds *utils.Credentials) resty.RequestMiddleware {
 	return func(client *resty.Client, request *resty.Request) error {
-		return addSignatureAuthentication(request, creds)
+		return authenticate(request, creds)
 	}
 }
 
-func addSignatureAuthentication(request *resty.Request, creds *utils.Credentials) error {
+func authenticate(request *resty.Request, creds *utils.Credentials) error {
 	if request.Method != http.MethodPost {
 		return nil
 	}
-	request.SetFormData(map[string]string{
-		"api_key": creds.APIKey,
-	})
-	signature := generateSignature(request.FormData, creds)
-	request.SetFormData(map[string]string{
-		"sign": signature,
-	})
+	sign(request, creds)
 	return nil
+}
+
+func sign(request *resty.Request, creds *utils.Credentials) {
+	request.SetFormData(map[string]string{"api_key": creds.APIKey})
+	signature := generateSignature(request.FormData, creds)
+	request.SetFormData(map[string]string{"sign": signature})
 }
 
 func generateSignature(formData url.Values, creds *utils.Credentials) string {

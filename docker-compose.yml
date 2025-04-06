@@ -17,16 +17,32 @@ x-vmm-bot: &vmm-bot-service
   restart: unless-stopped
 
 services:
-  biconomy-vmm-bot:
+  bybit-vmm-bot:
     <<: *vmm-bot-service
     environment:
       <<: *prod-env-variables
-      SERVICE_NAME: biconomy-vmm-bot
-      EXCHANGE_NAME: biconomy
+      SERVICE_NAME: bybit-vmm-bot
+      EXCHANGE_NAME: bybit
+      SYMBOL: STOPUSDT
+      ORACLE_SYMBOL: STOPUSDT
+      PRICE_DECIMALS_PRECISION: 5
+      AMOUNT_DECIMALS_PRECISION: 0
     build:
       # Note:
       # The image is built only once by running "docker compose build".
       # The image is then referred by other services via the name tag. 
       context: .
       dockerfile: Dockerfile
+    container_name: bybit-vmm-bot
+
+  biconomy-vmm-bot:
+    <<: *vmm-bot-service
+    environment:
+      <<: *prod-env-variables
+      SERVICE_NAME: biconomy-vmm-bot
+      EXCHANGE_NAME: biconomy
+      SYMBOL: STOP_USDT
+      ORACLE_SYMBOL: STOPUSDT
+      PRICE_DECIMALS_PRECISION: 5
+      AMOUNT_DECIMALS_PRECISION: 3
     container_name: biconomy-vmm-bot
