@@ -119,3 +119,22 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 	}
 	return nil
 }
+
+func (api *Client) CancelAllOrders(ctx context.Context, symbol string) error {
+	res, err := api.client.
+		NewUtaBybitServiceWithParams(
+			map[string]any{
+				"category": "spot",
+				"symbol":   symbol,
+			},
+		).
+		CancelAllOrders(context.Background())
+	if err != nil {
+		return err
+	}
+	wrappedRes := bybitModels.Response(*res)
+	if err = wrappedRes.Validate(); err != nil {
+		return err
+	}
+	return nil
+}

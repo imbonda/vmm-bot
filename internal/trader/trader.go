@@ -79,6 +79,10 @@ func (t *Trader) DoIteration(ctx context.Context) error {
 }
 
 func (t *Trader) TradeOnce(ctx context.Context) (*models.TradeOnceOutput, error) {
+	err := t.cancelAllOrders(ctx)
+	if err != nil {
+		return nil, err
+	}
 	params, err := t.getTradeParams(ctx)
 	if err != nil {
 		return nil, err
@@ -89,6 +93,10 @@ func (t *Trader) TradeOnce(ctx context.Context) (*models.TradeOnceOutput, error)
 	}
 	err = t.placeOrder(ctx, params, models.Buy)
 	return &models.TradeOnceOutput{}, err
+}
+
+func (t *Trader) cancelAllOrders(ctx context.Context) error {
+	return t.exchangeClient.CancelAllOrders(ctx, t.symbol)
 }
 
 func (t *Trader) placeOrder(ctx context.Context, orderInput *tradeParams, action models.OrderAction) error {

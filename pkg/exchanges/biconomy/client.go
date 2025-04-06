@@ -2,10 +2,12 @@ package biconomy
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/go-kit/log"
 	"github.com/go-resty/resty/v2"
+	"github.com/samber/lo"
 
 	"github.com/imbonda/vmm-bot/pkg/exchanges/biconomy/hooks"
 	biconomyModels "github.com/imbonda/vmm-bot/pkg/exchanges/biconomy/models"
@@ -132,6 +134,98 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 
 	if resp.IsError() || !res.IsSuccessful() {
 		return fmt.Errorf("biconomy placeOrder request failed: %s", res.Message)
+	}
+
+	return nil
+}
+
+func (api *Client) CancelAllOrders(ctx context.Context, symbol string) error {
+	records, err := api.queryUnfilledOrders(ctx, symbol)
+	if err != nil {
+		return err
+	}
+	if len(records) > 0 {
+		return api.batchCancelOrders(ctx, records)
+	}
+	return nil
+}
+
+func (api *Client) queryUnfilledOrders(_ context.Context, symbol string) ([]biconomyModels.PendingOrder, error) {
+	var res biconomyModels.Response[biconomyModels.PendingOrdersResult]
+
+	formData := map[string]string{
+		"market": symbol,
+		"limit":  "10",
+	}
+
+	resp, err := api.client.R().
+		SetFormData(formData).
+		SetResult(&res).
+		Post(api.v1.Join("private/order/pending"))
+
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.IsError() || !res.IsSuccessful() {
+		return nil, fmt.Errorf("biconomy queryUnfilledOrders request failed: %s", res.Message)
+	}
+
+	return res.Result.Records, nil
+}
+
+func (api *Client) cancelOrder(_ context.Context, order *biconomyModels.PendingOrder) error {
+	var res biconomyModels.Response[biconomyModels.CancelledOrder]
+
+	formData := map[string]string{
+		"market":   order.Symbol,
+		"order_id": utils.FormatIntToString(order.OrderId),
+	}
+
+	resp, err := api.client.R().
+		SetFormData(formData).
+		SetResult(&res).
+		Post(api.v1.Join("private/trade/cancel"))
+
+	if err != nil {
+		return err
+	}
+
+	if resp.IsError() || !res.IsSuccessful() {
+		return fmt.Errorf("biconomy cancelOrder request failed: %s", res.Message)
+	}
+
+	return nil
+}
+
+func (api *Client) batchCancelOrders(_ context.Context, orders []biconomyModels.PendingOrder) error {
+	var res biconomyModels.Response[biconomyModels.CancelledBatch]
+
+	ordersParams := lo.Map(orders, func(order biconomyModels.PendingOrder, _ int) biconomyModels.CancelledOrderParam {
+		return biconomyModels.CancelledOrderParam{
+			Symbol:  order.Symbol,
+			OrderId: order.OrderId,
+		}
+	})
+	ordersJson, err := json.Marshal(ordersParams)
+	if err != nil {
+		return err
+	}
+	formData := map[string]string{
+		"orders_json": string(ordersJson),
+	}
+
+	resp, err := api.client.R().
+		SetFormData(formData).
+		SetResult(&res).
+		Post(api.v1.Join("private/trade/cancel_batch"))
+
+	if err != nil {
+		return err
+	}
+
+	if resp.IsError() || !res.IsSuccessful() {
+		return fmt.Errorf("biconomy batchCancelOrders request failed: %s", res.Message)
 	}
 
 	return nil

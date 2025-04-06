@@ -1,8 +1,16 @@
 package utils
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
-// FormatFloatToString converts a float64 to a string without specifying decimals
+// FormatIntToString converts an int to a string
+func FormatIntToString(value int) string {
+	return fmt.Sprint(value)
+}
+
+// FormatFloatToString converts a float64 to a string
 func FormatFloatToString(value float64, precision int) string {
 	if precision >= 0 {
 		return strconv.FormatFloat(value, 'f', precision, 64)
