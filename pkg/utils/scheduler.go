@@ -12,7 +12,7 @@ import (
 type Scheduler struct {
 	intervalDuration   time.Duration
 	numTasksInInterval int
-	task               func()
+	task               func(context.Context)
 	logger             log.Logger
 	taskChan           chan struct{}
 	stopChan           chan struct{}
@@ -21,7 +21,7 @@ type Scheduler struct {
 type NewSchedulerInput struct {
 	IntervalDuration   time.Duration
 	NumTasksInInterval int
-	Task               func()
+	Task               func(context.Context)
 	Logger             log.Logger
 }
 
@@ -36,7 +36,7 @@ func NewScheduler(input *NewSchedulerInput) *Scheduler {
 	}
 }
 
-func (s *Scheduler) SetTask(task func()) {
+func (s *Scheduler) SetTask(task func(context.Context)) {
 	s.task = task
 }
 
@@ -52,48 +52,46 @@ func (s *Scheduler) run(ctx context.Context) {
 	for {
 		level.Info(s.logger).Log("msg", "starting run interval")
 		start := time.Now()
-		select {
-		case <-s.stopChan:
-			level.Info(s.logger).Log("msg", "stopped run loop")
-			return
-		default:
-			// Schedule operations randomly within interval
-			for range s.numTasksInInterval {
-				go func() {
-					delay := time.Duration(rand.Int63n(int64(s.intervalDuration.Milliseconds()))) * time.Millisecond
-					level.Debug(s.logger).Log("msg", "got random sleep time", "sleepTime", delay.Seconds())
-					select {
-					case <-s.stopChan:
-						return
-					case <-time.After(delay):
-						s.taskChan <- struct{}{}
-					}
-				}()
-			}
+		// Schedule operations randomly within interval
+		for range s.numTasksInInterval {
+			go s.scheduleTask()
+		}
 
-			// Consume tasks sequentially
-			for range s.numTasksInInterval {
-				select {
-				case <-s.stopChan:
-					return
-				case <-s.taskChan:
-					s.task()
-				}
-			}
-
-			level.Debug(s.logger).Log("msg", "finished run interval")
-
-			// Measure how long it took to schedule
-			elapsed := time.Since(start)
-			remaining := s.intervalDuration - elapsed
-			if remaining > 0 {
-				select {
-				case <-time.After(remaining):
-					continue
-				case <-s.stopChan:
-					return
-				}
+		// Consume tasks sequentially
+		for range s.numTasksInInterval {
+			select {
+			case <-s.stopChan:
+				level.Info(s.logger).Log("msg", "stopped run loop")
+				return
+			case <-s.taskChan:
+				s.task(ctx)
 			}
 		}
+
+		level.Debug(s.logger).Log("msg", "finished run interval")
+
+		// Measure how long it took to schedule
+		elapsed := time.Since(start)
+		remaining := s.intervalDuration - elapsed
+		if remaining > 0 {
+			select {
+			case <-s.stopChan:
+				level.Info(s.logger).Log("msg", "stopped run loop")
+				return
+			case <-time.After(remaining):
+				continue
+			}
+		}
+	}
+}
+
+func (s *Scheduler) scheduleTask() {
+	delay := time.Duration(rand.Int63n(int64(s.intervalDuration.Milliseconds()))) * time.Millisecond
+	level.Debug(s.logger).Log("msg", "got random sleep time", "sleepTime", delay.Seconds())
+	select {
+	case <-s.stopChan:
+		return
+	case <-time.After(delay):
+		s.taskChan <- struct{}{}
 	}
 }

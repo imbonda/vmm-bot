@@ -41,7 +41,11 @@ func NewIterationsExecutor[I iterable](ctx context.Context, input *NewIterations
 		logger:       input.Logger,
 		lastRunEpoch: atomic.Uint64{},
 	}
-	scheduler.SetTask(func() { executor.doIteration(ctx) })
+	scheduler.SetTask(
+		func(ctx context.Context) {
+			executor.doIteration(ctx)
+		},
+	)
 	return executor, nil
 }
 
