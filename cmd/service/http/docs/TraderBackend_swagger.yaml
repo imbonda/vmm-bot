@@ -1,0 +1,33 @@
+definitions:
+  http.errorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  models.TradeOnceOutput:
+    type: object
+info:
+  contact: {}
+  description: This is a sample server to perform symbol trading requests
+  title: Trader API
+  version: "1.0"
+paths:
+  /api/v1/trade:
+    post:
+      consumes:
+      - application/json
+      description: Call the trade once method to execute a trade
+      operationId: trade_once
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TradeOnceOutput'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.errorResponse'
+      summary: Trade once for the configure symbol
+swagger: "2.0"

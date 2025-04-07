@@ -1,0 +1,51 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a sample server to perform symbol trading requests",
+        "title": "Trader API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/v1/trade": {
+            "post": {
+                "description": "Call the trade once method to execute a trade",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Trade once for the configure symbol",
+                "operationId": "trade_once",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TradeOnceOutput"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.errorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "http.errorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.TradeOnceOutput": {
+            "type": "object"
+        }
+    }
+}

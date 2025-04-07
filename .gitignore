@@ -21,5 +21,10 @@
 go.work
 go.work.sum
 
-# env file
-.env
+# dotenv environment variable files
+.env*
+!.env*.example
+
+__debug_*
+
+.idea
