@@ -89,7 +89,7 @@ Thats it!
 | Bybit                     | UPPERCASE, no separator                     | `BTCUSDT`          |
 | Biconomy                  | UPPERCASE with underscore                   | `BTC_USDT`         |
 
-### 🔀 Amount Decimals
+### 🔢 Amount Decimals
 
 | Exchange                  | Decimals    |
 |---------------------------|-------------|
