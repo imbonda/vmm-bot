@@ -2,7 +2,6 @@ package trader
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"runtime/debug"
 
@@ -131,6 +130,10 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	if err != nil {
 		return nil, err
 	}
+	lastPrice, err := ticker.Price()
+	if err != nil {
+		return nil, err
+	}
 	spread, err := ticker.Spread()
 	if err != nil {
 		return nil, err
@@ -139,11 +142,11 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	if err != nil {
 		return nil, err
 	}
-	lastPrice, err := oracleTicker.Price()
+	oraclePrice, err := oracleTicker.Price()
 	if err != nil {
 		return nil, err
 	}
-	price, err := t.getRandPriceInSpread(ctx, spread, lastPrice)
+	price, err := t.getRandPriceInSpread(ctx, spread, lastPrice, oraclePrice)
 	if err != nil {
 		return nil, err
 	}
@@ -155,31 +158,25 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	}, nil
 }
 
-func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, lastPrice float64) (float64, error) {
-	// Calculate the intersection range
+func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, lastPrice float64, oraclePrice float64) (float64, error) {
 	lowerLimit := lastPrice * (1 - t.candleHeight)
 	upperLimit := lastPrice * (1 + t.candleHeight)
+
+	oracleLowerLimit := oraclePrice * (1 - t.candleHeight)
+	oracleUpperLimit := oraclePrice * (1 + t.candleHeight)
 
 	// Spread bounds
 	spreadMin := spread.Bid + t.spreadMarginMin*spread.Diff
 	spreadMax := spread.Bid + t.spreadMarginMax*spread.Diff
 
 	// Final intersection range
-	min := math.Max(spreadMin, lowerLimit)
-	max := math.Min(spreadMax, upperLimit)
+	min := math.Max(math.Max(spreadMin, oracleLowerLimit), lowerLimit)
+	max := math.Min(math.Min(spreadMax, oracleUpperLimit), upperLimit)
 
-	if min > max && max < spreadMax {
-		// Fallback limit range to spread righ margin.
-		max = spreadMax
-	}
-
-	if min > max {
-		// Fallback limit range to spread left margin.
-		min = spreadMin
-	}
-
-	if min > max {
-		return 0, fmt.Errorf("cannot decide on a price range. min: %f, max: %f", min, max)
+	if min < lowerLimit || max > upperLimit {
+		sign := math.Copysign(1, oraclePrice-lastPrice)
+		min = lowerLimit + sign*lastPrice*t.candleHeight
+		max = lowerLimit + sign*lastPrice*t.candleHeight
 	}
 
 	return utils.RandInRange(min, max), nil
