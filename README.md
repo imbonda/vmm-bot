@@ -2,6 +2,13 @@
 A volume market-making bot built in Go and containerized with Docker.<br/>
 The bot continuously places pseudo-random orders within the bid/ask spread to simulate liquidity.
 
+## 📦 Dependencies
+
+This project requires the following tools to be installed on your system:
+1. [docker](https://docs.docker.com/get-started/get-docker/)
+2. [docker-compose](https://docs.docker.com/compose/install/)
+
+---
 
 ## 🚀 Getting Started
 
