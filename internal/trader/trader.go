@@ -2,7 +2,6 @@ package trader
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"runtime/debug"
 
@@ -168,9 +167,16 @@ func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, 
 	min := math.Max(spreadMin, lowerLimit)
 	max := math.Min(spreadMax, upperLimit)
 
-	if min > max {
-		return 0, fmt.Errorf("cannot decide on a price range. min: %f, max: %f", min, max)
+	if min > max && max < spreadMax {
+		// Fallback limit range to spread righ margin.
+		max = spreadMax
 	}
+
+	if min > max {
+		// Fallback limit range to spread left margin.
+		min = spreadMin
+	}
+
 	return utils.RandInRange(min, max), nil
 }
 
