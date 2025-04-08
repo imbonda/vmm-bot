@@ -49,6 +49,11 @@ To stop:
 docker compose stop
 ```
 
+View logs:
+```bash
+docker logs -f {{service_name}}
+```
+
 Thats it!
 
 ---
