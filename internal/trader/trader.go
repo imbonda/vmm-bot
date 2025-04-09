@@ -172,6 +172,11 @@ func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, 
 	spreadMin := spread.Bid + t.spreadMarginMin*spread.Diff
 	spreadMax := spread.Bid + t.spreadMarginMax*spread.Diff
 
+	if spread.Diff < 0 {
+		spreadMin = spread.Bid
+		spreadMax = oraclePrice
+	}
+
 	// Intersecting range with oracle price range
 	min := math.Max(spreadMin, oracleLowerLimit)
 	max := math.Min(spreadMax, oracleUpperLimit)
