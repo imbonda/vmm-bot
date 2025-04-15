@@ -13,7 +13,7 @@ x-vmm-bot: &vmm-bot-service
     options:
       max-size: 100m
       max-file: 1
-  image: vmm-bot:1.0.0
+  image: vmm-bot:1.0.1
   restart: unless-stopped
 
 services:
@@ -25,6 +25,8 @@ services:
       EXCHANGE_NAME: bybit
       SYMBOL: STOPUSDT
       ORACLE_SYMBOL: STOPUSDT
+      TRADE_AMOUNT_MIN: 60
+      TRADE_AMOUNT_MAX: 90
       PRICE_DECIMALS_PRECISION: 5
       AMOUNT_DECIMALS_PRECISION: 0
     build:
@@ -43,6 +45,8 @@ services:
       EXCHANGE_NAME: biconomy
       SYMBOL: STOP_USDT
       ORACLE_SYMBOL: STOPUSDT
+      TRADE_AMOUNT_MIN: 1200
+      TRADE_AMOUNT_MAX: 1800
       PRICE_DECIMALS_PRECISION: 5
       AMOUNT_DECIMALS_PRECISION: 3
     container_name: biconomy-vmm-bot

@@ -160,22 +160,26 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 }
 
 func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, lastPrice float64, oraclePrice float64) (float64, error) {
+	direction := math.Copysign(1, oraclePrice-lastPrice)
+
 	// Candle height range
-	lowerLimit := lastPrice * (1 - t.candleHeight)
-	upperLimit := lastPrice * (1 + t.candleHeight)
+	lowerLimit := lastPrice * (1 - t.candleHeight/2 + direction*t.candleHeight/2)
+	upperLimit := lastPrice * (1 + t.candleHeight/2 + direction*t.candleHeight/2)
 
 	// Oracle candle height range
-	oracleLowerLimit := oraclePrice * (1 - t.candleHeight)
-	oracleUpperLimit := oraclePrice * (1 + t.candleHeight)
+	oracleLowerLimit := oraclePrice * (1 - t.candleHeight/2)
+	oracleUpperLimit := oraclePrice * (1 + t.candleHeight/2)
 
 	// Spread bounds
-	spreadMin := spread.Bid + t.spreadMarginMin*spread.Diff
-	spreadMax := spread.Bid + t.spreadMarginMax*spread.Diff
-
-	// In case no asks in the order book.
+	var spreadMin, spreadMax float64
 	if spread.Diff < 0 {
-		spreadMin = spread.Bid
-		spreadMax = oraclePrice
+		// In case no asks in the order book.
+		defaultDiff := t.candleHeight * spread.Bid
+		spreadMin = spread.Bid + defaultDiff*t.spreadMarginMin
+		spreadMax = spread.Bid + defaultDiff*t.spreadMarginMax
+	} else {
+		spreadMin = spread.Bid + spread.Diff*t.spreadMarginMin
+		spreadMax = spread.Bid + spread.Diff*t.spreadMarginMax
 	}
 
 	// Intersecting range with oracle price range
@@ -184,13 +188,8 @@ func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, 
 
 	if min > max {
 		// Adjusting range within spread margin and candle height
-		if min < lowerLimit {
-			min = math.Max(spreadMin, lowerLimit)
-			max = math.Min(spreadMax, lastPrice)
-		} else if max > upperLimit {
-			min = math.Max(spreadMin, lastPrice)
-			max = math.Min(spreadMax, upperLimit)
-		}
+		min = math.Max(spreadMin, lowerLimit)
+		max = math.Min(spreadMax, upperLimit)
 	}
 
 	if min > max {
