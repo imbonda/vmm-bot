@@ -9,9 +9,13 @@ import (
 // Seed random generator.
 var r = rand.New(rand.NewSource(time.Now().UnixNano()))
 
+// Generate random number in the full open range (min, max)
 func RandInRange(min, max float64) float64 {
-	// Generate random price in the limited range
+again:
 	val := min + r.Float64()*(max-min)
+	if val == min || val == max {
+		goto again
+	}
 	return val
 }
 

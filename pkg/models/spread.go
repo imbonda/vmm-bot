@@ -46,6 +46,14 @@ func (s *Spread) Contains(values ...float64) bool {
 	return true
 }
 
+func (s *Spread) Above(value float64) bool {
+	return s.Bid > value
+}
+
+func (s *Spread) Below(value float64) bool {
+	return s.Ask < value
+}
+
 func (s *Spread) MarginSpread(lowerPercentage, upperPercentage float64) *Spread {
 	ask := s.Bid + s.Diff()*upperPercentage
 	bid := s.Bid + s.Diff()*lowerPercentage

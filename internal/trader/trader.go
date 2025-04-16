@@ -205,12 +205,49 @@ func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, 
 	case margin.Contains(upperLimit):
 		min, max = math.Max(margin.Bid, lastPrice), upperLimit
 
+	// In case the margins are too big consider the spread itself ignoring margins.
+
+	case spread.Contains(oracleLowerLimit, oracleUpperLimit):
+		min, max = oracleLowerLimit, oracleUpperLimit
+	case spread.Contains(oracleLowerLimit):
+		min, max = oracleLowerLimit, math.Min(spread.Ask, oraclePrice)
+	case spread.Contains(oracleUpperLimit):
+		min, max = math.Max(spread.Bid, oraclePrice), oracleUpperLimit
+
+	case spread.Contains(lowerLimitWithDirection, upperLimitWithDirection):
+		min, max = lowerLimitWithDirection, upperLimitWithDirection
+	case spread.Contains(lowerLimitWithDirection):
+		min, max = lowerLimitWithDirection, math.Min(spread.Ask, lastPrice)
+	case spread.Contains(upperLimitWithDirection):
+		min, max = math.Max(spread.Bid, lastPrice), upperLimitWithDirection
+
+	case spread.Contains(lowerLimit, upperLimit):
+		min, max = lowerLimit, upperLimit
+	case spread.Contains(lowerLimit):
+		min, max = lowerLimit, math.Min(spread.Ask, lastPrice)
+	case spread.Contains(upperLimit):
+		min, max = math.Max(spread.Bid, lastPrice), upperLimit
+
 	default:
-		min, max = margin.Bid, margin.Ask
+		return 0, fmt.Errorf(
+			"cannot decide on a price range. oraclePrice: %f, price: %f, ask: %f, bid: %f",
+			oraclePrice,
+			lastPrice,
+			spread.Ask,
+			spread.Bid,
+		)
 	}
 
 	if min > max {
-		return 0, fmt.Errorf("cannot decide on a price range. min: %f, max: %f", min, max)
+		return 0, fmt.Errorf(
+			"unexpected price range. min: %f, max: %f, oraclePrice: %f, price: %f, ask: %f, bid: %f",
+			min,
+			max,
+			oraclePrice,
+			lastPrice,
+			spread.Ask,
+			spread.Bid,
+		)
 	}
 
 	return utils.RandInRange(min, max), nil
