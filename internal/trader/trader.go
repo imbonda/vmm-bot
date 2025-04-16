@@ -20,8 +20,8 @@ type Trader struct {
 	symbol            string
 	oracleSymbol      string
 	candleHeight      float64
-	spreadMarginMin   float64
-	spreadMarginMax   float64
+	spreadMarginLower float64
+	spreadMarginUpper float64
 	tradeQtyMin       float64
 	tradeQtyMax       float64
 	priceDecimals     int
@@ -35,8 +35,8 @@ type NewTraderInput struct {
 	Symbol            string
 	OracleSymbol      string
 	CandleHeight      float64
-	SpreadMarginMin   float64
-	SpreadMarginMax   float64
+	SpreadMarginLower float64
+	SpreadMarginUpper float64
 	TradeAmountMin    float64
 	TradeAmountMax    float64
 	PriceDecimals     int
@@ -57,8 +57,8 @@ func NewTrader(ctx context.Context, input *NewTraderInput) (*Trader, error) {
 		symbol:            input.Symbol,
 		oracleSymbol:      input.OracleSymbol,
 		candleHeight:      input.CandleHeight,
-		spreadMarginMin:   input.SpreadMarginMin,
-		spreadMarginMax:   input.SpreadMarginMax,
+		spreadMarginLower: input.SpreadMarginLower,
+		spreadMarginUpper: input.SpreadMarginUpper,
 		tradeQtyMin:       input.TradeAmountMin,
 		tradeQtyMax:       input.TradeAmountMax,
 		priceDecimals:     input.PriceDecimals,
@@ -176,9 +176,9 @@ func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, 
 	if spread.Diff() < 0 {
 		clone := spread.Clone()
 		clone.Ask = clone.Bid * (1 + t.candleHeight)
-		margin = clone.MarginSpread(t.spreadMarginMin, t.spreadMarginMax)
+		margin = clone.MarginSpread(t.spreadMarginLower, t.spreadMarginUpper)
 	} else {
-		margin = spread.MarginSpread(t.spreadMarginMin, t.spreadMarginMax)
+		margin = spread.MarginSpread(t.spreadMarginLower, t.spreadMarginUpper)
 	}
 
 	var min, max float64

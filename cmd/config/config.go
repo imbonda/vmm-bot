@@ -43,15 +43,15 @@ type Configuration struct {
 	}
 
 	Trade struct {
-		Symbol          string  `required:"1" envconfig:"SYMBOL"`
-		OracleSymbol    string  `required:"1" envconfig:"ORACLE_SYMBOL"`
-		CandleHeight    float64 `required:"1" envconfig:"CANDLE_HEIGHT"`
-		SpreadMarginMin float64 `default:"0" envconfig:"SPREAD_MARGIN_MIN"`
-		SpreadMarginMax float64 `default:"1" envconfig:"SPREAD_MARGIN_MAX"`
-		TradeAmountMin  float64 `required:"1" envconfig:"TRADE_AMOUNT_MIN"`
-		TradeAmountMax  float64 `required:"1" envconfig:"TRADE_AMOUNT_MAX"`
-		PriceDecimals   int     `default:"3" envconfig:"PRICE_DECIMALS_PRECISION"`
-		AmountDecimals  int     `default:"2" envconfig:"AMOUNT_DECIMALS_PRECISION"`
+		Symbol            string  `required:"1" envconfig:"SYMBOL"`
+		OracleSymbol      string  `required:"1" envconfig:"ORACLE_SYMBOL"`
+		CandleHeight      float64 `required:"1" envconfig:"CANDLE_HEIGHT"`
+		SpreadMarginLower float64 `default:"0" envconfig:"SPREAD_MARGIN_LOWER"`
+		SpreadMarginUpper float64 `default:"1" envconfig:"SPREAD_MARGIN_UPPER"`
+		TradeAmountMin    float64 `required:"1" envconfig:"TRADE_AMOUNT_MIN"`
+		TradeAmountMax    float64 `required:"1" envconfig:"TRADE_AMOUNT_MAX"`
+		PriceDecimals     int     `default:"3" envconfig:"PRICE_DECIMALS_PRECISION"`
+		AmountDecimals    int     `default:"2" envconfig:"AMOUNT_DECIMALS_PRECISION"`
 	}
 
 	Log struct {

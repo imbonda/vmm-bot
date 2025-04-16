@@ -9,15 +9,15 @@ import (
 )
 
 type TradeConfig struct {
-	Symbol          string
-	OracleSymbol    string
-	CandleHeight    float64
-	SpreadMarginMin float64
-	SpreadMarginMax float64
-	TradeAmountMin  float64
-	TradeAmountMax  float64
-	PriceDecimals   int
-	AmountDecimals  int
+	Symbol            string
+	OracleSymbol      string
+	CandleHeight      float64
+	SpreadMarginLower float64
+	SpreadMarginUpper float64
+	TradeAmountMin    float64
+	TradeAmountMax    float64
+	PriceDecimals     int
+	AmountDecimals    int
 }
 
 type ExecutorConfig struct {

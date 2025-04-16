@@ -78,8 +78,8 @@ Thats it!
 | INTERVAL_EXECUTION_DURATION         | Interval duration                           | `30s`              |
 | NUM_OF_TRADE_ITERATIONS_IN_INTERVAL | Number of trades per interval               | `3`                |
 | CANDLE_HEIGHT                       | Price restriction as % of last price        | `0.005`            |
-| SPREAD_MARGIN_MIN                   | `price >= bid + spread * min_margin`        | `0.2`              |
-| SPREAD_MARGIN_MAX                   | `price <= bid + spread * max_margin`        | `0.8`              |
+| SPREAD_MARGIN_LOWER                 | `price >= bid + spread * min_margin`        | `0.2`              |
+| SPREAD_MARGIN_UPPER                 | `price <= bid + spread * max_margin`        | `0.8`              |
 | TRADE_AMOUNT_MIN                    | `amount >= min`                             | `100`              |
 | TRADE_AMOUNT_MAX                    | `amount <= max`                             | `200`              |
 | SYMBOL                              | Trading pair symbol                         | `BTCUSDT`          |
