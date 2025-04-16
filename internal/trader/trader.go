@@ -160,36 +160,53 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 }
 
 func (t *Trader) getRandPriceInSpread(_ context.Context, spread *models.Spread, lastPrice float64, oraclePrice float64) (float64, error) {
-	direction := math.Copysign(1, oraclePrice-lastPrice)
-
-	// Candle height range
-	lowerLimit := lastPrice * (1 - t.candleHeight/2 + direction*t.candleHeight/2)
-	upperLimit := lastPrice * (1 + t.candleHeight/2 + direction*t.candleHeight/2)
-
 	// Oracle candle height range
 	oracleLowerLimit := oraclePrice * (1 - t.candleHeight/2)
 	oracleUpperLimit := oraclePrice * (1 + t.candleHeight/2)
 
-	// Spread bounds
-	var spreadMin, spreadMax float64
-	if spread.Diff < 0 {
-		// In case no asks in the order book.
-		defaultDiff := t.candleHeight * spread.Bid
-		spreadMin = spread.Bid + defaultDiff*t.spreadMarginMin
-		spreadMax = spread.Bid + defaultDiff*t.spreadMarginMax
+	// Candle height range
+	lowerLimit := lastPrice * (1 - t.candleHeight/2)
+	upperLimit := lastPrice * (1 + t.candleHeight/2)
+
+	direction := math.Copysign(1, oraclePrice-lastPrice)
+	lowerLimitWithDirection := lowerLimit * (1 + direction*t.candleHeight/2)
+	upperLimitWithDirection := upperLimit * (1 + direction*t.candleHeight/2)
+
+	var margin *models.Spread
+	if spread.Diff() < 0 {
+		clone := spread.Clone()
+		clone.Ask = clone.Bid * (1 + t.candleHeight)
+		margin = clone.MarginSpread(t.spreadMarginMin, t.spreadMarginMax)
 	} else {
-		spreadMin = spread.Bid + spread.Diff*t.spreadMarginMin
-		spreadMax = spread.Bid + spread.Diff*t.spreadMarginMax
+		margin = spread.MarginSpread(t.spreadMarginMin, t.spreadMarginMax)
 	}
 
-	// Intersecting range with oracle price range
-	min := math.Max(spreadMin, oracleLowerLimit)
-	max := math.Min(spreadMax, oracleUpperLimit)
+	var min, max float64
 
-	if min > max {
-		// Adjusting range within spread margin and candle height
-		min = math.Max(spreadMin, lowerLimit)
-		max = math.Min(spreadMax, upperLimit)
+	switch {
+	case margin.Contains(oracleLowerLimit, oracleUpperLimit):
+		min, max = oracleLowerLimit, oracleUpperLimit
+	case margin.Contains(oracleLowerLimit):
+		min, max = oracleLowerLimit, math.Min(margin.Ask, oraclePrice)
+	case margin.Contains(oracleUpperLimit):
+		min, max = math.Max(margin.Bid, oraclePrice), oracleUpperLimit
+
+	case margin.Contains(lowerLimitWithDirection, upperLimitWithDirection):
+		min, max = lowerLimitWithDirection, upperLimitWithDirection
+	case margin.Contains(lowerLimitWithDirection):
+		min, max = lowerLimitWithDirection, math.Min(margin.Ask, lastPrice)
+	case margin.Contains(upperLimitWithDirection):
+		min, max = math.Max(margin.Bid, lastPrice), upperLimitWithDirection
+
+	case margin.Contains(lowerLimit, upperLimit):
+		min, max = lowerLimit, upperLimit
+	case margin.Contains(lowerLimit):
+		min, max = lowerLimit, math.Min(margin.Ask, lastPrice)
+	case margin.Contains(upperLimit):
+		min, max = math.Max(margin.Bid, lastPrice), upperLimit
+
+	default:
+		min, max = margin.Bid, margin.Ask
 	}
 
 	if min > max {
