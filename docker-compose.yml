@@ -25,7 +25,7 @@ services:
       EXCHANGE_NAME: bybit
       SYMBOL: STOPUSDT
       ORACLE_SYMBOL: STOPUSDT
-      INTERVAL_EXECUTION_DURATION: 30s
+      INTERVAL_EXECUTION_DURATION: 20s
       NUM_OF_TRADE_ITERATIONS_IN_INTERVAL: 1
       TRADE_AMOUNT_MIN: 60
       TRADE_AMOUNT_MAX: 90
@@ -54,3 +54,20 @@ services:
       PRICE_DECIMALS_PRECISION: 5
       AMOUNT_DECIMALS_PRECISION: 3
     container_name: biconomy-vmm-bot
+  
+  bingx-vmm-bot:
+    <<: *vmm-bot-service
+    environment:
+      <<: *prod-env-variables
+      SERVICE_NAME: bingx-vmm-bot
+      EXCHANGE_NAME: bingx
+      SYMBOL: STOP-USDT
+      ORACLE_SYMBOL: STOPUSDT
+      INTERVAL_EXECUTION_DURATION: 20s
+      NUM_OF_TRADE_ITERATIONS_IN_INTERVAL: 1
+      TRADE_AMOUNT_MIN: 60
+      TRADE_AMOUNT_MAX: 90
+      PRICE_DECIMALS_PRECISION: 5
+      AMOUNT_DECIMALS_PRECISION: 3
+    container_name: biconomy-vmm-bot
+
