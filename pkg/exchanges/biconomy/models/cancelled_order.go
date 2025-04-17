@@ -5,11 +5,11 @@ type CancelledOrderParam struct {
 	OrderId int    `json:"order_id"`
 }
 
-type CancelledOrder PendingOrder
+type RawCancelledOrder RawPendingOrder
 
-type CancelledBatch []CancelledOrderInBatch
+type RawCancelledBatch []RawCancelledOrderInBatch
 
-type CancelledOrderInBatch struct {
+type RawCancelledOrderInBatch struct {
 	Symbol     string `json:"market"`
 	OrderId    int    `json:"order_id"`
 	Successful string `json:"result"`

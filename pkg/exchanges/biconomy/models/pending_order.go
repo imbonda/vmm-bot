@@ -1,12 +1,12 @@
 package models
 
 type PendingOrdersResult struct {
-	Limit   int            `json:"limit"`
-	Offset  int            `json:"offset"`
-	Records []PendingOrder `json:"records"`
+	Limit   int               `json:"limit"`
+	Offset  int               `json:"offset"`
+	Records []RawPendingOrder `json:"records"`
 }
 
-type PendingOrder struct {
+type RawPendingOrder struct {
 	Amount     string  `json:"amount"`
 	CreatedAt  float64 `json:"ctime"`
 	DealFee    string  `json:"deal_fee"`

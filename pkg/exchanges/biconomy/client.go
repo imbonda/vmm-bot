@@ -154,7 +154,7 @@ func (api *Client) CancelAllOrders(ctx context.Context, symbol string) error {
 	return nil
 }
 
-func (api *Client) queryUnfilledOrders(_ context.Context, symbol string) ([]biconomyModels.PendingOrder, error) {
+func (api *Client) queryUnfilledOrders(_ context.Context, symbol string) ([]biconomyModels.RawPendingOrder, error) {
 	var res biconomyModels.Response[biconomyModels.PendingOrdersResult]
 
 	formData := map[string]string{
@@ -181,8 +181,8 @@ func (api *Client) queryUnfilledOrders(_ context.Context, symbol string) ([]bico
 	return res.Result.Records, nil
 }
 
-func (api *Client) cancelOrder(_ context.Context, order *biconomyModels.PendingOrder) error {
-	var res biconomyModels.Response[biconomyModels.CancelledOrder]
+func (api *Client) cancelOrder(_ context.Context, order *biconomyModels.RawPendingOrder) error {
+	var res biconomyModels.Response[biconomyModels.RawCancelledOrder]
 
 	formData := map[string]string{
 		"market":   order.Symbol,
@@ -208,10 +208,10 @@ func (api *Client) cancelOrder(_ context.Context, order *biconomyModels.PendingO
 	return nil
 }
 
-func (api *Client) batchCancelOrders(_ context.Context, orders []biconomyModels.PendingOrder) error {
-	var res biconomyModels.Response[biconomyModels.CancelledBatch]
+func (api *Client) batchCancelOrders(_ context.Context, orders []biconomyModels.RawPendingOrder) error {
+	var res biconomyModels.Response[biconomyModels.RawCancelledBatch]
 
-	ordersParams := lo.Map(orders, func(order biconomyModels.PendingOrder, _ int) biconomyModels.CancelledOrderParam {
+	ordersParams := lo.Map(orders, func(order biconomyModels.RawPendingOrder, _ int) biconomyModels.CancelledOrderParam {
 		return biconomyModels.CancelledOrderParam{
 			Symbol:  order.Symbol,
 			OrderId: order.OrderId,
