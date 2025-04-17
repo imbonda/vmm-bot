@@ -76,6 +76,7 @@ Thats it!
 |-------------------------------------|---------------------------------------------|--------------------|
 | SERVICE_NAME                        | The name of your service                    | `bybit-vmm-bot`    |
 | EXCHANGE_NAME                       | The exchange to trade on                    | `bybit`            |
+| ORACLE_EXCHANGE_NAME                | The exchange used for price alignment       | `bybit`            |
 | BYBIT_API_KEY                       | Bybit API key                               | `...`              |
 | BYBIT_API_SECRET                    | Bybit API secret                            | `...`              |
 | BICONOMY_API_KEY                    | Biconomy API key                            | `...`              |
