@@ -13,6 +13,7 @@ import (
 	"github.com/imbonda/vmm-bot/cmd/interfaces"
 	"github.com/imbonda/vmm-bot/pkg/exchanges"
 	"github.com/imbonda/vmm-bot/pkg/exchanges/biconomy"
+	"github.com/imbonda/vmm-bot/pkg/exchanges/bingx"
 	"github.com/imbonda/vmm-bot/pkg/exchanges/bybit"
 	"github.com/imbonda/vmm-bot/pkg/utils"
 )
@@ -39,6 +40,10 @@ type Configuration struct {
 		Biconomy struct {
 			ExchangeAPIKey    string `required:"1" envconfig:"BICONOMY_API_KEY"`
 			ExchangeAPISecret string `required:"1" envconfig:"BICONOMY_API_SECRET"`
+		}
+		BingX struct {
+			ExchangeAPIKey    string `required:"1" envconfig:"BINGX_API_KEY"`
+			ExchangeAPISecret string `required:"1" envconfig:"BINGX_API_SECRET"`
 		}
 	}
 
@@ -96,6 +101,8 @@ func (cfg *Configuration) GetExchangeClient(ctx context.Context) (interfaces.Exc
 	switch cfg.Exchange.Name {
 	case exchanges.Biconomy:
 		return cfg.getBiconomyClient(ctx)
+	case exchanges.BingX:
+		return cfg.getBingXClient(ctx)
 	case exchanges.Bybit:
 		return cfg.getBybitClient(ctx)
 	default:
@@ -112,6 +119,20 @@ func (cfg *Configuration) getBiconomyClient(ctx context.Context) (interfaces.Exc
 	apiClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
 		APIKey:    cfg.Exchange.Biconomy.ExchangeAPIKey,
 		APISecret: cfg.Exchange.Biconomy.ExchangeAPISecret,
+		Logger:    logger,
+	})
+	if err != nil {
+		level.Error(logger).Log("msg", "failed to create biconomy client", "err", err)
+		return nil, err
+	}
+	return apiClient, nil
+}
+
+func (cfg *Configuration) getBingXClient(ctx context.Context) (interfaces.ExchangeClient, error) {
+	logger := cfg.GetLogger()
+	apiClient, err := bingx.NewClient(ctx, &bingx.NewClientInput{
+		APIKey:    cfg.Exchange.BingX.ExchangeAPIKey,
+		APISecret: cfg.Exchange.BingX.ExchangeAPISecret,
 		Logger:    logger,
 	})
 	if err != nil {
