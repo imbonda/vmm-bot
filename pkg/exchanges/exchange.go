@@ -5,4 +5,5 @@ type Exchange string
 const (
 	Bybit    Exchange = "bybit"
 	Biconomy Exchange = "biconomy"
+	BingX    Exchange = "bingx"
 )

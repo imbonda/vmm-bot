@@ -57,7 +57,7 @@ func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Ord
 	return result, err
 }
 
-func (api *Client) GetLatestTicker(ctx context.Context, symbol string) (*models.Ticker, error) {
+func (api *Client) GetLastTicker(ctx context.Context, symbol string) (*models.Ticker, error) {
 	res, err := api.client.
 		NewUtaBybitServiceWithParams(
 			map[string]any{
@@ -82,7 +82,7 @@ func (api *Client) GetLatestTicker(ctx context.Context, symbol string) (*models.
 	if err != nil {
 		return nil, err
 	}
-	ticker, err := rawResult.LatestTicker()
+	ticker, err := rawResult.LastTicker()
 	if err != nil {
 		return nil, err
 	}

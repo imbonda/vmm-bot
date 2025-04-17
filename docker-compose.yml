@@ -13,7 +13,7 @@ x-vmm-bot: &vmm-bot-service
     options:
       max-size: 100m
       max-file: 1
-  image: vmm-bot:1.0.1
+  image: vmm-bot:1.0.2
   restart: unless-stopped
 
 services:

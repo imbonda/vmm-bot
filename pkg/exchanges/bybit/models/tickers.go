@@ -3,9 +3,9 @@ package models
 import "fmt"
 
 type RawTickersResult struct {
-	Category     string      `json:"category"`
-	List         []RawTicker `json:"list"`
-	latestTicker *RawTicker
+	Category  string      `json:"category"`
+	List      []RawTicker `json:"list"`
+	lasTicker *RawTicker
 }
 
 type RawTicker struct {
@@ -35,13 +35,13 @@ type RawTicker struct {
 	Basis                  string `json:"basis"`
 }
 
-func (r *RawTickersResult) LatestTicker() (*RawTicker, error) {
-	if r.latestTicker != nil {
-		return r.latestTicker, nil
+func (r *RawTickersResult) LastTicker() (*RawTicker, error) {
+	if r.lasTicker != nil {
+		return r.lasTicker, nil
 	}
 	if len(r.List) < 1 {
 		return nil, fmt.Errorf("no tickers found")
 	}
-	r.latestTicker = &r.List[0]
-	return r.latestTicker, nil
+	r.lasTicker = &r.List[0]
+	return r.lasTicker, nil
 }

@@ -68,7 +68,8 @@ func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 		v2:     v2,
 		creds:  creds,
 		client: client,
-		logger: input.Logger}, nil
+		logger: input.Logger,
+	}, nil
 }
 
 func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.OrderBook, error) {
@@ -90,7 +91,7 @@ func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Ord
 	}, nil
 }
 
-func (api *Client) GetLatestTicker(ctx context.Context, symbol string) (*models.Ticker, error) {
+func (api *Client) GetLastTicker(ctx context.Context, symbol string) (*models.Ticker, error) {
 	var res biconomyModels.RawTickersResult
 	resp, err := api.client.R().
 		SetResult(&res).
@@ -101,7 +102,7 @@ func (api *Client) GetLatestTicker(ctx context.Context, symbol string) (*models.
 	if resp.IsError() {
 		return nil, fmt.Errorf("biconomy tickers request failed: %s", resp.Status())
 	}
-	ticker, err := res.LatestTicker(symbol)
+	ticker, err := res.LastTicker(symbol)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +133,10 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 		return err
 	}
 
-	if resp.IsError() || !res.IsSuccessful() {
+	if resp.IsError() {
+		return fmt.Errorf("biconomy placeOrder request failed with status: %s", resp.Status())
+	}
+	if !res.IsSuccessful() {
 		return fmt.Errorf("biconomy placeOrder request failed: %s", res.Message)
 	}
 
@@ -167,7 +171,10 @@ func (api *Client) queryUnfilledOrders(_ context.Context, symbol string) ([]bico
 		return nil, err
 	}
 
-	if resp.IsError() || !res.IsSuccessful() {
+	if resp.IsError() {
+		return nil, fmt.Errorf("biconomy queryUnfilledOrders request failed with status: %s", resp.Status())
+	}
+	if !res.IsSuccessful() {
 		return nil, fmt.Errorf("biconomy queryUnfilledOrders request failed: %s", res.Message)
 	}
 
@@ -191,7 +198,10 @@ func (api *Client) cancelOrder(_ context.Context, order *biconomyModels.PendingO
 		return err
 	}
 
-	if resp.IsError() || !res.IsSuccessful() {
+	if resp.IsError() {
+		return fmt.Errorf("biconomy cancelOrder request failed with status: %s", resp.Status())
+	}
+	if !res.IsSuccessful() {
 		return fmt.Errorf("biconomy cancelOrder request failed: %s", res.Message)
 	}
 
@@ -224,7 +234,10 @@ func (api *Client) batchCancelOrders(_ context.Context, orders []biconomyModels.
 		return err
 	}
 
-	if resp.IsError() || !res.IsSuccessful() {
+	if resp.IsError() {
+		return fmt.Errorf("biconomy batchCancelOrders request failed with status: %s", resp.Status())
+	}
+	if !res.IsSuccessful() {
 		return fmt.Errorf("biconomy batchCancelOrders request failed: %s", res.Message)
 	}
 

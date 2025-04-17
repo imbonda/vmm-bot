@@ -7,8 +7,8 @@ import (
 )
 
 type RawTickersResult struct {
-	Tickers      []RawTicker `json:"ticker"`
-	latestTicker *RawTicker
+	Tickers    []RawTicker `json:"ticker"`
+	lastTicker *RawTicker
 }
 
 type RawTicker struct {
@@ -23,9 +23,9 @@ type RawTicker struct {
 	Bid       string `json:"buy"`
 }
 
-func (r *RawTickersResult) LatestTicker(symbol string) (*RawTicker, error) {
-	if r.latestTicker != nil {
-		return r.latestTicker, nil
+func (r *RawTickersResult) LastTicker(symbol string) (*RawTicker, error) {
+	if r.lastTicker != nil {
+		return r.lastTicker, nil
 	}
 	err := fmt.Errorf("no tickers found")
 	if len(r.Tickers) < 1 {
@@ -40,6 +40,6 @@ func (r *RawTickersResult) LatestTicker(symbol string) (*RawTicker, error) {
 	if !found {
 		return nil, err
 	}
-	r.latestTicker = &ticker
-	return r.latestTicker, nil
+	r.lastTicker = &ticker
+	return r.lastTicker, nil
 }

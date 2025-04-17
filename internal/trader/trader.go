@@ -126,7 +126,7 @@ func (t *Trader) placeOrder(ctx context.Context, orderInput *tradeParams, action
 }
 
 func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
-	ticker, err := t.exchangeClient.GetLatestTicker(ctx, t.symbol)
+	ticker, err := t.exchangeClient.GetLastTicker(ctx, t.symbol)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (t *Trader) getTradeParams(ctx context.Context) (*tradeParams, error) {
 	if err != nil {
 		return nil, err
 	}
-	oracleTicker, err := t.priceOracleClient.GetLatestTicker(ctx, t.oracleSymbol)
+	oracleTicker, err := t.priceOracleClient.GetLastTicker(ctx, t.oracleSymbol)
 	if err != nil {
 		return nil, err
 	}

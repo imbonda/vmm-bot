@@ -30,10 +30,8 @@ func (_m *ExchangeClient) GetOrderBook(ctx context.Context, symbol string) (*mod
 	}
 	if rf, ok := ret.Get(0).(func(context.Context, string) *models.OrderBook); ok {
 		r0 = rf(ctx, symbol)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.OrderBook)
-		}
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).(*models.OrderBook)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
