@@ -65,9 +65,9 @@ services:
       ORACLE_SYMBOL: STOPUSDT
       INTERVAL_EXECUTION_DURATION: 20s
       NUM_OF_TRADE_ITERATIONS_IN_INTERVAL: 1
-      TRADE_AMOUNT_MIN: 60
-      TRADE_AMOUNT_MAX: 90
+      TRADE_AMOUNT_MIN: 1200
+      TRADE_AMOUNT_MAX: 2000
       PRICE_DECIMALS_PRECISION: 5
       AMOUNT_DECIMALS_PRECISION: 3
-    container_name: biconomy-vmm-bot
+    container_name: bingx-vmm-bot
 
