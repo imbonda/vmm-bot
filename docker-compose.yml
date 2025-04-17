@@ -23,6 +23,7 @@ services:
       <<: *prod-env-variables
       SERVICE_NAME: bybit-vmm-bot
       EXCHANGE_NAME: bybit
+      ORACLE_EXCHANGE_NAME: bybit
       SYMBOL: STOPUSDT
       ORACLE_SYMBOL: STOPUSDT
       INTERVAL_EXECUTION_DURATION: 20s
@@ -45,6 +46,7 @@ services:
       <<: *prod-env-variables
       SERVICE_NAME: biconomy-vmm-bot
       EXCHANGE_NAME: biconomy
+      ORACLE_EXCHANGE_NAME: bybit
       SYMBOL: STOP_USDT
       ORACLE_SYMBOL: STOPUSDT
       INTERVAL_EXECUTION_DURATION: 30s
@@ -61,6 +63,7 @@ services:
       <<: *prod-env-variables
       SERVICE_NAME: bingx-vmm-bot
       EXCHANGE_NAME: bingx
+      ORACLE_EXCHANGE_NAME: bybit
       SYMBOL: STOP-USDT
       ORACLE_SYMBOL: STOPUSDT
       INTERVAL_EXECUTION_DURATION: 20s

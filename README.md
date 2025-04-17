@@ -35,6 +35,10 @@ BYBIT_API_SECRET= # bybit exchange api-secret...
 # Biconomy.
 BICONOMY_API_KEY= # biconomy exchange api-key...
 BICONOMY_API_SECRET= # biconomy exchange api-secret...
+
+# BingX.
+BINGX_API_KEY= # BingX exchange api-key...
+BINGX_API_SECRET= # BingX exchange api-secret...
 ```
 
 ### 3. Run with Docker Compose
@@ -60,10 +64,11 @@ Thats it!
 
 ## 🌐 Supported Exchanges
 
-| Exchange Name     | Value for `EXCHANGE_NAME`	 | Docs / Info                                             |
-|-------------------|----------------------------|---------------------------------------------------------|
-| Bybit             | `bybit`                    | [docs](https://bybit-exchange.github.io/docs/v5/intro)  |
-| Biconomy          | `biconomy`                 | [docs](https://github.com/BiconomyOfficial/apidocs)     |
+| Exchange Name     | Value for `EXCHANGE_NAME`/`ORACLE_EXCHANGE_NAME` | Docs / Info                                                         |
+|-------------------|--------------------------------------------------|---------------------------------------------------------------------|
+| Bybit             | `bybit`                                          | [docs](https://bybit-exchange.github.io/docs/v5/intro)              |
+| Biconomy          | `biconomy`                                       | [docs](https://github.com/BiconomyOfficial/apidocs)                 |
+| BingX             | `bingx`                                          | [docs](https://bingx-api.github.io/docs/#/en-us/spot/changelog)     |
 
 ## 🧾 Enviornment Variables
 
@@ -75,6 +80,8 @@ Thats it!
 | BYBIT_API_SECRET                    | Bybit API secret                            | `...`              |
 | BICONOMY_API_KEY                    | Biconomy API key                            | `...`              |
 | BICONOMY_API_SECRET                 | Biconomy API secret                         | `...`              |
+| BINGX_API_KEY                       | BingX API key                               | `...`              |
+| BINGX_API_SECRET                    | BingX API secret                            | `...`              |
 | INTERVAL_EXECUTION_DURATION         | Interval duration                           | `30s`              |
 | NUM_OF_TRADE_ITERATIONS_IN_INTERVAL | Number of trades per interval               | `3`                |
 | CANDLE_HEIGHT                       | Price restriction as % of last price        | `0.005`            |
@@ -93,6 +100,7 @@ Thats it!
 |---------------------------|---------------------------------------------|--------------------|
 | Bybit                     | UPPERCASE, no separator                     | `BTCUSDT`          |
 | Biconomy                  | UPPERCASE with underscore                   | `BTC_USDT`         |
+| Bingx                     | UPPERCASE with dash                         | `BTC-USDT`         |
 
 ### 🔢 Amount Decimals
 
@@ -100,3 +108,4 @@ Thats it!
 |---------------------------|-------------|
 | Bybit                     | 0           |
 | Biconomy                  | 3           |
+| BingX                     | 3           |
