@@ -34,19 +34,22 @@ type ExchangeConfig struct {
 	Name   exchanges.Exchange `required:"1" envconfig:"EXCHANGE_NAME"`
 	Oracle exchanges.Exchange `required:"1" envconfig:"ORACLE_EXCHANGE_NAME"`
 	Bybit  struct {
-		ExchangeAPIKey    string `required:"1" envconfig:"BYBIT_API_KEY"`
-		ExchangeAPISecret string `required:"1" envconfig:"BYBIT_API_SECRET"`
-		client            interfaces.ExchangeClient
+		ExchangeAPIKey     string        `required:"1" envconfig:"BYBIT_API_KEY"`
+		ExchangeAPISecret  string        `required:"1" envconfig:"BYBIT_API_SECRET"`
+		ExchangeAPITimeout time.Duration `required:"1" envconfig:"BYBIT_API_TIMEOUT"`
+		client             interfaces.ExchangeClient
 	}
 	Biconomy struct {
-		ExchangeAPIKey    string `required:"1" envconfig:"BICONOMY_API_KEY"`
-		ExchangeAPISecret string `required:"1" envconfig:"BICONOMY_API_SECRET"`
-		client            interfaces.ExchangeClient
+		ExchangeAPIKey     string        `required:"1" envconfig:"BICONOMY_API_KEY"`
+		ExchangeAPISecret  string        `required:"1" envconfig:"BICONOMY_API_SECRET"`
+		ExchangeAPITimeout time.Duration `required:"1" envconfig:"BICONOMY_API_TIMEOUT"`
+		client             interfaces.ExchangeClient
 	}
 	BingX struct {
-		ExchangeAPIKey    string `required:"1" envconfig:"BINGX_API_KEY"`
-		ExchangeAPISecret string `required:"1" envconfig:"BINGX_API_SECRET"`
-		client            interfaces.ExchangeClient
+		ExchangeAPIKey     string        `required:"1" envconfig:"BINGX_API_KEY"`
+		ExchangeAPISecret  string        `required:"1" envconfig:"BINGX_API_SECRET"`
+		ExchangeAPITimeout time.Duration `required:"1" envconfig:"BINGX_API_TIMEOUT"`
+		client             interfaces.ExchangeClient
 	}
 }
 
@@ -135,9 +138,10 @@ func (cfg *Configuration) getBiconomyClient(ctx context.Context) (interfaces.Exc
 	}
 	logger := cfg.GetLogger()
 	apiClient, err := biconomy.NewClient(ctx, &biconomy.NewClientInput{
-		APIKey:    exchangeCfg.ExchangeAPIKey,
-		APISecret: exchangeCfg.ExchangeAPISecret,
-		Logger:    logger,
+		APIKey:     exchangeCfg.ExchangeAPIKey,
+		APISecret:  exchangeCfg.ExchangeAPISecret,
+		APITimeout: exchangeCfg.ExchangeAPITimeout,
+		Logger:     logger,
 	})
 	if err != nil {
 		level.Error(logger).Log("msg", "failed to create biconomy client", "err", err)
@@ -154,9 +158,10 @@ func (cfg *Configuration) getBingXClient(ctx context.Context) (interfaces.Exchan
 	}
 	logger := cfg.GetLogger()
 	apiClient, err := bingx.NewClient(ctx, &bingx.NewClientInput{
-		APIKey:    exchangeCfg.ExchangeAPIKey,
-		APISecret: exchangeCfg.ExchangeAPISecret,
-		Logger:    logger,
+		APIKey:     exchangeCfg.ExchangeAPIKey,
+		APISecret:  exchangeCfg.ExchangeAPISecret,
+		APITimeout: exchangeCfg.ExchangeAPITimeout,
+		Logger:     logger,
 	})
 	if err != nil {
 		level.Error(logger).Log("msg", "failed to create bingx client", "err", err)
@@ -173,9 +178,10 @@ func (cfg *Configuration) getBybitClient(ctx context.Context) (interfaces.Exchan
 	}
 	logger := cfg.GetLogger()
 	apiClient, err := bybit.NewClient(ctx, &bybit.NewClientInput{
-		APIKey:    exchangeCfg.ExchangeAPIKey,
-		APISecret: exchangeCfg.ExchangeAPISecret,
-		Logger:    logger,
+		APIKey:     exchangeCfg.ExchangeAPIKey,
+		APISecret:  exchangeCfg.ExchangeAPISecret,
+		APITimeout: exchangeCfg.ExchangeAPITimeout,
+		Logger:     logger,
 	})
 	if err != nil {
 		level.Error(logger).Log("msg", "failed to create bybit client", "err", err)

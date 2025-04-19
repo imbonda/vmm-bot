@@ -3,6 +3,7 @@ package bybit
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	bybit "github.com/bybit-exchange/bybit.go.api"
 	"github.com/go-kit/log"
@@ -17,9 +18,10 @@ type Client struct {
 }
 
 type NewClientInput struct {
-	APIKey    string
-	APISecret string
-	Logger    log.Logger
+	APIKey     string
+	APISecret  string
+	APITimeout time.Duration
+	Logger     log.Logger
 }
 
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
@@ -28,6 +30,9 @@ func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 			input.APIKey,
 			input.APISecret,
 			bybit.WithBaseURL(bybit.MAINNET),
+			func(c *bybit.Client) {
+				c.HTTPClient.Timeout = input.APITimeout
+			},
 		),
 	}, nil
 }

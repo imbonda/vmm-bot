@@ -79,10 +79,13 @@ Thats it!
 | ORACLE_EXCHANGE_NAME                | The exchange used for price alignment       | `bybit`            |
 | BYBIT_API_KEY                       | Bybit API key                               | `...`              |
 | BYBIT_API_SECRET                    | Bybit API secret                            | `...`              |
+| BYBIT_API_TIMEOUT                   | Bybit API timeout duration                  | `5s`               |
 | BICONOMY_API_KEY                    | Biconomy API key                            | `...`              |
 | BICONOMY_API_SECRET                 | Biconomy API secret                         | `...`              |
+| BICONOMY_API_TIMEOUT                | Biconomy API timeout duration               | `5s`               |
 | BINGX_API_KEY                       | BingX API key                               | `...`              |
 | BINGX_API_SECRET                    | BingX API secret                            | `...`              |
+| BINGX_API_TIMEOUT                   | BingX API timeout duration                  | `5s`               |
 | INTERVAL_EXECUTION_DURATION         | Interval duration                           | `30s`              |
 | NUM_OF_TRADE_ITERATIONS_IN_INTERVAL | Number of trades per interval               | `3`                |
 | CANDLE_HEIGHT                       | Price restriction as % of last price        | `0.005`            |

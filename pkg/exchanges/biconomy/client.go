@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/go-kit/log"
 	"github.com/go-resty/resty/v2"
@@ -45,9 +46,10 @@ type Client struct {
 }
 
 type NewClientInput struct {
-	APIKey    string
-	APISecret string
-	Logger    log.Logger
+	APIKey     string
+	APISecret  string
+	APITimeout time.Duration
+	Logger     log.Logger
 }
 
 func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
@@ -60,7 +62,8 @@ func NewClient(ctx context.Context, input *NewClientInput) (*Client, error) {
 	client := resty.New().
 		SetBaseURL(BaseAPIURL).
 		SetHeader("Content-Type", "application/x-www-form-urlencoded").
-		SetHeader("X-SITE-ID", "127")
+		SetHeader("X-SITE-ID", "127").
+		SetTimeout(input.APITimeout)
 	// Add credentials to every request.
 	client.OnBeforeRequest(hooks.GetSigAuthBeforeRequestHook(client, creds))
 	return &Client{
