@@ -21,7 +21,7 @@ import (
 type ServiceConfig struct {
 	Name              string              `default:"trader" envconfig:"SERVICE_NAME"`
 	Orchestration     utils.Orchestration `default:"executor" envconfig:"SERVICE_ORCHESTRATION"`
-	GraceFullShutdown time.Duration       `default:"5s" envconfig:"GRACE_FULL_SHUTDOWN"`
+	GracefulShutdown time.Duration       `default:"5s" envconfig:"GRACEFUL_SHUTDOWN"`
 }
 
 type ExecutorConfig struct {

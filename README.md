@@ -72,31 +72,34 @@ Thats it!
 
 ## 🧾 Enviornment Variables
 
-| Variable                            | Description                                 | Example            |
-|-------------------------------------|---------------------------------------------|--------------------|
-| SERVICE_NAME                        | The name of your service                    | `bybit-vmm-bot`    |
-| EXCHANGE_NAME                       | The exchange to trade on                    | `bybit`            |
-| ORACLE_EXCHANGE_NAME                | The exchange used for price alignment       | `bybit`            |
-| BYBIT_API_KEY                       | Bybit API key                               | `...`              |
-| BYBIT_API_SECRET                    | Bybit API secret                            | `...`              |
-| BYBIT_API_TIMEOUT                   | Bybit API timeout duration                  | `5s`               |
-| BICONOMY_API_KEY                    | Biconomy API key                            | `...`              |
-| BICONOMY_API_SECRET                 | Biconomy API secret                         | `...`              |
-| BICONOMY_API_TIMEOUT                | Biconomy API timeout duration               | `5s`               |
-| BINGX_API_KEY                       | BingX API key                               | `...`              |
-| BINGX_API_SECRET                    | BingX API secret                            | `...`              |
-| BINGX_API_TIMEOUT                   | BingX API timeout duration                  | `5s`               |
-| INTERVAL_EXECUTION_DURATION         | Interval duration                           | `30s`              |
-| NUM_OF_TRADE_ITERATIONS_IN_INTERVAL | Number of trades per interval               | `3`                |
-| CANDLE_HEIGHT                       | Price restriction as % of last price        | `0.005`            |
-| SPREAD_MARGIN_LOWER                 | `price >= bid + spread * min_margin`        | `0.2`              |
-| SPREAD_MARGIN_UPPER                 | `price <= bid + spread * max_margin`        | `0.8`              |
-| TRADE_AMOUNT_MIN                    | `amount >= min`                             | `100`              |
-| TRADE_AMOUNT_MAX                    | `amount <= max`                             | `200`              |
-| SYMBOL                              | Trading pair symbol                         | `BTCUSDT`          |
-| ORACLE_SYMBOL                       | Trading pair symbol used as price oracle    | `BTCUSDT`          |
-| PRICE_DECIMALS_PRECISION            | Price decimals may differ by exchange       | `5`                |
-| AMOUNT_DECIMALS_PRECISION           | Amount decimals may differ by exchange      | `3`                |
+| Variable                            | Description                                  | Example            |
+|-------------------------------------|----------------------------------------------|--------------------|
+| SERVICE_NAME                        | The name of your service                     | `bybit-vmm-bot`    |
+| SERVICE_ORCHESTRATION               | Whether to run a scheduler or OpenAPI server | `executor`/`http`  |
+| GRACEFUL_SHUTDOWN                   | Time given for graceful shutdown             | `5s`               |
+| EXCHANGE_NAME                       | The exchange to trade on                     | `bybit`            |
+| ORACLE_EXCHANGE_NAME                | The exchange used for price alignment        | `bybit`            |
+| BYBIT_API_KEY                       | Bybit API key                                | `...`              |
+| BYBIT_API_SECRET                    | Bybit API secret                             | `...`              |
+| BYBIT_API_TIMEOUT                   | Bybit API timeout duration                   | `5s`               |
+| BICONOMY_API_KEY                    | Biconomy API key                             | `...`              |
+| BICONOMY_API_SECRET                 | Biconomy API secret                          | `...`              |
+| BICONOMY_API_TIMEOUT                | Biconomy API timeout duration                | `5s`               |
+| BINGX_API_KEY                       | BingX API key                                | `...`              |
+| BINGX_API_SECRET                    | BingX API secret                             | `...`              |
+| BINGX_API_TIMEOUT                   | BingX API timeout duration                   | `5s`               |
+| INTERVAL_EXECUTION_DURATION         | Interval duration                            | `30s`              |
+| NUM_OF_TRADE_ITERATIONS_IN_INTERVAL | Number of trades per interval                | `3`                |
+| ListenAddress                       | The address on which OpenAPI server runs     | `8080`             |
+| CANDLE_HEIGHT                       | Price restriction as % of last price         | `0.005`            |
+| SPREAD_MARGIN_LOWER                 | `price >= bid + spread * min_margin`         | `0.2`              |
+| SPREAD_MARGIN_UPPER                 | `price <= bid + spread * max_margin`         | `0.8`              |
+| TRADE_AMOUNT_MIN                    | `amount >= min`                              | `100`              |
+| TRADE_AMOUNT_MAX                    | `amount <= max`                              | `200`              |
+| SYMBOL                              | Trading pair symbol                          | `BTCUSDT`          |
+| ORACLE_SYMBOL                       | Trading pair symbol used as price oracle     | `BTCUSDT`          |
+| PRICE_DECIMALS_PRECISION            | Price decimals may differ by exchange        | `5`                |
+| AMOUNT_DECIMALS_PRECISION           | Amount decimals may differ by exchange       | `3`                |
 
 ### 🔀 Trading Pair Symbol Format
 
@@ -113,3 +116,13 @@ Thats it!
 | Bybit                     | 0           |
 | Biconomy                  | 3           |
 | BingX                     | 3           |
+
+
+---
+
+## 🟢 Running OpenAPI Server
+
+There is a preconfigured VS Code launch config named **"[GO] OpenAPI"** in `.vscode/launch.json`.
+
+> This will start the OpenAPI server and serve Swagger UI at:<br>
+http://localhost:8080/swagger/index.html

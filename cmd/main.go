@@ -56,7 +56,7 @@ func main() {
 	}
 
 	// gracefully shutdown the server, waiting max 5 seconds for current operations to complete
-	ctx1, cancel1 := context.WithTimeout(context.Background(), cfg.Service.GraceFullShutdown)
+	ctx1, cancel1 := context.WithTimeout(context.Background(), cfg.Service.GracefulShutdown)
 	defer cancel1()
 	if err = traderService.Shutdown(ctx1); err != nil {
 		level.Error(logger).Log("msg", "server shutdown:", "err", err)
