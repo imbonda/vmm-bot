@@ -3,7 +3,6 @@ package bybit
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"time"
 
 	bybit "github.com/bybit-exchange/bybit.go.api"
@@ -47,13 +46,6 @@ func (api *Client) GetOrderBook(ctx context.Context, symbol string) (*models.Ord
 			},
 		).
 		GetOrderBookInfo(ctx)
-	err = wrapResponseErrors(
-		&requestInfo{
-			method:   http.MethodGet,
-			endpoint: "GetOrderBookInfo",
-		},
-		err,
-	)
 	if err != nil {
 		return nil, err
 	}
@@ -79,13 +71,6 @@ func (api *Client) GetLastTicker(ctx context.Context, symbol string) (*models.Ti
 			},
 		).
 		GetMarketTickers(ctx)
-	err = wrapResponseErrors(
-		&requestInfo{
-			method:   http.MethodGet,
-			endpoint: "GetMarketTickers",
-		},
-		err,
-	)
 	if err != nil {
 		return nil, err
 	}
@@ -130,13 +115,6 @@ func (api *Client) PlaceOrder(ctx context.Context, order *models.Order) error {
 			},
 		).
 		PlaceOrder(context.Background())
-	err = wrapResponseErrors(
-		&requestInfo{
-			method:   http.MethodPost,
-			endpoint: "PlaceOrder",
-		},
-		err,
-	)
 	if err != nil {
 		return err
 	}
@@ -156,13 +134,6 @@ func (api *Client) CancelAllOrders(ctx context.Context, symbol string) error {
 			},
 		).
 		CancelAllOrders(context.Background())
-	err = wrapResponseErrors(
-		&requestInfo{
-			method:   http.MethodPost,
-			endpoint: "CancelAllOrders",
-		},
-		err,
-	)
 	if err != nil {
 		return err
 	}
